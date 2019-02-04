@@ -1,0 +1,13 @@
+{
+	"authors": [
+		"Mateusz Muszyński"
+	],
+	"copyright": "Copyright © 2019, Mateusz Muszyński",
+	"description": "MY game",
+	"license": "MIT",
+	"name": "dagoban",
+	
+	"dependencies": {
+        "dagon":  {"path":"../dagon/"}
+    },
+}
