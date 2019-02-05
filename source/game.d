@@ -188,8 +188,8 @@ class GameScene: Scene
                 {
                     case '#': drawSprite(i*64, j*64,  6*64, 6*64); break;
                     case '.': drawSprite(i*64, j*64, 11*64, 1*64); break;
-                    case '$':
-                    case '*': drawSprite(i*64, j*64,  1*64, 0*64); break;
+                    case '$': drawSprite(i*64, j*64,  1*64, 0*64); break;
+                    case '*': drawSprite(i*64, j*64,  1*64, 1*64); break;
                     case ' ': drawSprite(i*64, j*64, 11*64, 0*64); break;
                     default: break;
                 }
