@@ -42,8 +42,6 @@ class GameScene: Scene
 
         gui = New!NuklearGUI(eventManager, assetManager);	
         font = gui.addFont(aFontDroidSans, 20);
-        //font2 = gui.addFont(aFontDroidSans14, 15);
-        //font3 = gui.addFont(aFontDroidSans14, 16, [ 0x0020, 0x01FF, 0 ]);
         gui.generateFontAtlas();
 
         auto eNuklear = createEntity2D();
@@ -94,13 +92,15 @@ class GameScene: Scene
                         x = 0;
                     }
                     continue;
-                case '.':
+                case '*':
+                    score++;
+                    goto case;
+                case '$':
                     boxes++;
                     goto case;
                 case '#':
                 case ' ':
-                case '*':
-                case '$':
+                case '.':
                     map[y][x] = ch;
                     break;
                 case '@':
@@ -112,7 +112,6 @@ class GameScene: Scene
                     playerX = x;
                     playerY = y;
                     map[y][x] = '.';
-                    boxes++;
                     break;
                 default:
                     break;
@@ -211,10 +210,10 @@ class GameScene: Scene
             if(map[by][bx] != ' ' && map[by][bx] != '.')
                 return 0;
 
+            if(map[y][x] == '*')
+                score--;
             if(map[by][bx] == '.')
                 score++;
-            if(map[by][bx] == '*')
-                score--;
 
             map[by][bx] = map[by][bx] == '.' ? '*' : '$';
             map[y][x] = map[y][x] == '*' ? '.' : ' ';
@@ -263,11 +262,11 @@ class GameScene: Scene
             gui.labelf(NK_TEXT_LEFT, "Level: %d/117", levelToLoad + 1);
             gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
             gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
-            
+
             gui.layoutRowDynamic(20, 2);
             if(gui.buttonLabel("Prev")) loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
             if(gui.buttonLabel("Next")) loadMap(levelToLoad = (++levelToLoad)%117); 
-            
+
             gui.layoutRowDynamic(20, 1);
             if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);         
         }
