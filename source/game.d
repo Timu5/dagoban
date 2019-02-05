@@ -22,6 +22,8 @@ class GameScene: Scene
     int playerX;
     int playerY;
     int playerDirection;
+    int boxX;
+    int boxY;
     int boxes;
     int score;
     int steps;
@@ -62,6 +64,7 @@ class GameScene: Scene
     {
         playerInMove = false;
         playerDirection = Direction.down;
+        boxX = -1;
         width = 0;
         height = 0;
         boxes = 0;
@@ -203,6 +206,11 @@ class GameScene: Scene
             case Direction.right: drawSprite(playerX, playerY, (0 + frame) * 64, 6*64); break;
             default: break;
         }
+
+        if(boxX != -1)
+        {
+            drawSprite(boxX, boxY, 1*64, 0*64);
+        }
     }
 
     int step(int rx, int ry, int x, int y)
@@ -219,13 +227,13 @@ class GameScene: Scene
 
             if(map[y][x] == '*')
                 score--;
-            if(map[by][bx] == '.')
-                score++;
 
-            map[by][bx] = map[by][bx] == '.' ? '*' : '$';
             map[y][x] = map[y][x] == '*' ? '.' : ' ';
 
             pushes++;
+
+            boxX = x * 64 + rx * 4;
+            boxY = y * 64 + ry * 4;
         }
 
         steps++;
@@ -259,15 +267,27 @@ class GameScene: Scene
             // player in move
             switch(playerDirection)
             {
-                case Direction.up:    playerY -= 4; break;
-                case Direction.down:  playerY += 4; break;
-                case Direction.left:  playerX -= 4; break;
-                case Direction.right: playerX += 4; break;
+                case Direction.up:    playerY -= 4; if(boxX != -1) boxY -= 4; break;
+                case Direction.down:  playerY += 4; if(boxX != -1) boxY += 4; break;
+                case Direction.left:  playerX -= 4; if(boxX != -1) boxX -= 4; break;
+                case Direction.right: playerX += 4; if(boxX != -1) boxX += 4; break;
                 default: break;
             }
             if((playerX % 64) == 0 && (playerY % 64) == 0)
             {
                 playerInMove = false;
+                if(boxX != -1)
+                {
+                    int bx = boxX / 64;
+                    int by = boxY / 64;
+
+                    if(map[by][bx] == '.')
+                        score++;
+
+                    map[by][bx] = map[by][bx] == '.' ? '*' : '$';
+
+                    boxX = -1;
+                }
             }
         }
 
