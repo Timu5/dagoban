@@ -1,0 +1,15 @@
+.dub
+docs.json
+__dummy.html
+docs/
+/dagoban
+dagoban.so
+dagoban.dylib
+dagoban.dll
+dagoban.a
+dagoban.lib
+dagoban-test-*
+*.exe
+*.o
+*.obj
+*.lst
