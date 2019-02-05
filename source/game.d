@@ -104,7 +104,7 @@ class GameScene: Scene
                     boxes++;
                     goto case;
                 case '#':
-                case ' ':
+                    case ' ':
                 case '.':
                     map[y][x] = ch;
                     break;
@@ -184,22 +184,23 @@ class GameScene: Scene
                 switch(map[j][i])
                 {
                     case '#': drawSprite(i*64, j*64,  6*64, 6*64); break;
-                    case '.': drawSprite(i*64, j*64, 12*64, 1*64); break;
+                    case '.': drawSprite(i*64, j*64, 11*64, 1*64); break;
                     case '$':
                     case '*': drawSprite(i*64, j*64,  1*64, 0*64); break;
-                    case ' ': drawSprite(i*64, j*64, 12*64, 0*64); break;
+                    case ' ': drawSprite(i*64, j*64, 11*64, 0*64); break;
                     default: break;
                 }
             }
         }
 
         // draw player
+        int frame = (playerX % 64) / 21 +  (playerY % 64) / 21;
         switch(playerDirection)
         {
-            case Direction.up:    drawSprite(playerX, playerY, 3*64, 4*64); break;
-            case Direction.down:  drawSprite(playerX, playerY, 0*64, 4*64); break;
-            case Direction.left:  drawSprite(playerX, playerY, 3*64, 6*64); break;
-            case Direction.right: drawSprite(playerX, playerY, 0*64, 6*64); break;
+            case Direction.up:    drawSprite(playerX, playerY, (3 + frame) * 64, 4*64); break;
+            case Direction.down:  drawSprite(playerX, playerY, (0 + frame) * 64, 4*64); break;
+            case Direction.left:  drawSprite(playerX, playerY, (3 + frame) * 64, 6*64); break;
+            case Direction.right: drawSprite(playerX, playerY, (0 + frame) * 64, 6*64); break;
             default: break;
         }
     }
@@ -286,7 +287,7 @@ class GameScene: Scene
             input = 's';
         if(eventManager.keyPressed[KEY_LEFT] || eventManager.keyPressed[KEY_A])
             input = 'a';
-        if(eventManager.keyPressed[KEY_DOWN]  || eventManager.keyPressed[KEY_D])
+        if(eventManager.keyPressed[KEY_RIGHT] || eventManager.keyPressed[KEY_D])
             input = 'd';
         logic(input);
 
