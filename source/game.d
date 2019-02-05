@@ -18,6 +18,7 @@ class GameScene: Scene
     int width;
     int height;
     char[20][20] map;
+    bool playerInMove;
     int playerX;
     int playerY;
     int playerDirection;
@@ -25,7 +26,6 @@ class GameScene: Scene
     int score;
     int steps;
     int pushes;
-    char inputChar;
 
     this(SceneManager smngr)
     {
@@ -60,6 +60,7 @@ class GameScene: Scene
 
     int loadMap(int i)
     {
+        playerInMove = false;
         playerDirection = Direction.down;
         width = 0;
         height = 0;
@@ -108,13 +109,13 @@ class GameScene: Scene
                     map[y][x] = ch;
                     break;
                 case '@':
-                    playerX = x;
-                    playerY = y;
+                    playerX = x * 64;
+                    playerY = y * 64;
                     map[y][x] = ' ';
                     break;
                 case '+':
-                    playerX = x;
-                    playerY = y;
+                    playerX = x * 64;
+                    playerY = y * 64;
                     map[y][x] = '.';
                     break;
                 default:
@@ -130,25 +131,17 @@ class GameScene: Scene
     {
         if (key == KEY_BACKSPACE)
             gui.inputKeyDown(NK_KEY_BACKSPACE);
+
+        if(key == KEY_N)
+            loadMap(levelToLoad = (++levelToLoad)%117);
+        if(key == KEY_P)
+            loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
     }
 
     override void onKeyUp(int key)
     {
         if (key == KEY_BACKSPACE)
             gui.inputKeyUp(NK_KEY_BACKSPACE);
-
-        if(key == KEY_UP || key == KEY_W)
-            inputChar = 'w';
-        if(key == KEY_DOWN || key == KEY_S)
-            inputChar = 's';
-        if(key == KEY_LEFT || key == KEY_A)
-            inputChar = 'a';
-        if(key == KEY_RIGHT  || key == KEY_D)
-            inputChar = 'd';
-        if(key == KEY_N)
-            loadMap(levelToLoad = (++levelToLoad)%117);
-        if(key == KEY_P)
-            loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
     }
 
     override void onMouseButtonDown(int button)
@@ -203,10 +196,10 @@ class GameScene: Scene
         // draw player
         switch(playerDirection)
         {
-            case Direction.up:    drawSprite(playerX*64, playerY*64, 3*64, 4*64); break;
-            case Direction.down:  drawSprite(playerX*64, playerY*64, 0*64, 4*64); break;
-            case Direction.left:  drawSprite(playerX*64, playerY*64, 3*64, 6*64); break;
-            case Direction.right: drawSprite(playerX*64, playerY*64, 0*64, 6*64); break;
+            case Direction.up:    drawSprite(playerX, playerY, 3*64, 4*64); break;
+            case Direction.down:  drawSprite(playerX, playerY, 0*64, 4*64); break;
+            case Direction.left:  drawSprite(playerX, playerY, 3*64, 6*64); break;
+            case Direction.right: drawSprite(playerX, playerY, 0*64, 6*64); break;
             default: break;
         }
     }
@@ -240,9 +233,11 @@ class GameScene: Scene
 
     void logic(int ch)
     {
-        int x = 0;
-        int y = 0;
+        if(!playerInMove)
         {
+            // player idle
+            int x = 0;
+            int y = 0;
             switch(ch)
             {
                 case 'a': x--; playerDirection = Direction.left; break;
@@ -251,12 +246,30 @@ class GameScene: Scene
                 case 's': y++; playerDirection = Direction.down;  break;
                 default: return;
             }
-            if(step(x, y, playerX + x, playerY + y))
+            if(step(x, y, playerX/64 + x, playerY/64 + y))
             {
-                playerX += x;
-                playerY += y;
+                playerX += x * 4;
+                playerY += y * 4;
+                playerInMove = true;
             }
         }
+        else
+        {
+            // player in move
+            switch(playerDirection)
+            {
+                case Direction.up:    playerY -= 4; break;
+                case Direction.down:  playerY += 4; break;
+                case Direction.left:  playerX -= 4; break;
+                case Direction.right: playerX += 4; break;
+                default: break;
+            }
+            if((playerX % 64) == 0 && (playerY % 64) == 0)
+            {
+                playerInMove = false;
+            }
+        }
+
         if(score == boxes)
         {
             // we are done
@@ -266,8 +279,16 @@ class GameScene: Scene
 
     override void onLogicsUpdate(double dt)
     {
-        logic(inputChar);
-        inputChar = 0;
+        char input = 0;
+        if(eventManager.keyPressed[KEY_UP] || eventManager.keyPressed[KEY_W])
+            input = 'w';
+        if(eventManager.keyPressed[KEY_DOWN] || eventManager.keyPressed[KEY_S])
+            input = 's';
+        if(eventManager.keyPressed[KEY_LEFT] || eventManager.keyPressed[KEY_A])
+            input = 'a';
+        if(eventManager.keyPressed[KEY_DOWN]  || eventManager.keyPressed[KEY_D])
+            input = 'd';
+        logic(input);
 
         if (gui.begin("StatsMenu", NkRect(0, 0, 130, 92), NK_WINDOW_NO_SCROLLBAR))
         {
