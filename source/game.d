@@ -2,6 +2,8 @@ module game;
 
 import dagon;
 
+enum Direction { up, down, left, right }
+
 class GameScene: Scene
 {
     static int levelToLoad = 0;
@@ -16,13 +18,14 @@ class GameScene: Scene
     int width;
     int height;
     char[20][20] map;
-    int playerX = 11;
-    int playerY = 8;
-    int boxes = 0;
-    int score = 0;
-    int steps = 0;
-    int pushes = 0;
-    char inputChar = 0;
+    int playerX;
+    int playerY;
+    int playerDirection;
+    int boxes;
+    int score;
+    int steps;
+    int pushes;
+    char inputChar;
 
     this(SceneManager smngr)
     {
@@ -32,7 +35,7 @@ class GameScene: Scene
     override void onAssetsRequest()
     {    
         aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
-        aTexSokoban = addTextureAsset("data/textures/sokoban_spritesheet.png");
+        aTexSokoban = addTextureAsset("data/textures/tilesheet.png");
         aLevels =  addTextAsset("data/levels/Zone_26.txt");
     }
 
@@ -57,6 +60,7 @@ class GameScene: Scene
 
     int loadMap(int i)
     {
+        playerDirection = Direction.down;
         width = 0;
         height = 0;
         boxes = 0;
@@ -167,35 +171,44 @@ class GameScene: Scene
         gui.inputScroll(x, y);
     }
 
-    void drawSprite(int x, int y, int sx, int sy, int w, int h)
+    void drawSprite(int x, int y, int sx, int sy)
     {
         NkImage img = aTexSokoban.texture.toNuklearImage;
         img.region[0] = cast(short)sx;
         img.region[1] = cast(short)sy;
-        img.region[2] = cast(short)w;
-        img.region[3] = cast(short)h;
-        gui.drawImage(NkRect(x + 1280/2 - width*32, y + 720/2 - width*32 - 64, w, h), &img, NkColor(255,255,255,255));
-
+        img.region[2] = 64;
+        img.region[3] = 64;
+        gui.drawImage(NkRect(x + 1280/2 - width*32, y + 720/2 - width*32 - 64, 64, 64), &img, NkColor(255,255,255,255));
     }
 
     void draw()
     {
+        // draw map
         for(int j = 0; j < 11; j++)
         {
             for(int i = 0; i < 19; i++)
             {
                 switch(map[j][i])
                 {
-                    case '#': drawSprite(i*64,j*64,0*64,4*64,64,64); break;
-                    case '.': drawSprite(i*64, j*64, 1*64, 6*64,64,64); break;
+                    case '#': drawSprite(i*64, j*64,  6*64, 6*64); break;
+                    case '.': drawSprite(i*64, j*64, 12*64, 1*64); break;
                     case '$':
-                    case '*': drawSprite(i*64, j*64,2*64, 1*64, 64,64); break;
-                    case ' ': drawSprite(i*64,j*64, 0, 1*64, 64, 64); break;
+                    case '*': drawSprite(i*64, j*64,  1*64, 0*64); break;
+                    case ' ': drawSprite(i*64, j*64, 12*64, 0*64); break;
                     default: break;
                 }
             }
         }
-        drawSprite(playerX*64+10,playerY*64+5, 8*64, 54, 52, 54);
+
+        // draw player
+        switch(playerDirection)
+        {
+            case Direction.up:    drawSprite(playerX*64, playerY*64, 3*64, 4*64); break;
+            case Direction.down:  drawSprite(playerX*64, playerY*64, 0*64, 4*64); break;
+            case Direction.left:  drawSprite(playerX*64, playerY*64, 3*64, 6*64); break;
+            case Direction.right: drawSprite(playerX*64, playerY*64, 0*64, 6*64); break;
+            default: break;
+        }
     }
 
     int step(int rx, int ry, int x, int y)
@@ -232,10 +245,10 @@ class GameScene: Scene
         {
             switch(ch)
             {
-                case 'a': x--; break;
-                case 'd': x++; break;
-                case 'w': y--; break;
-                case 's': y++; break;
+                case 'a': x--; playerDirection = Direction.left; break;
+                case 'd': x++; playerDirection = Direction.right; break;
+                case 'w': y--; playerDirection = Direction.up; break;
+                case 's': y++; playerDirection = Direction.down;  break;
                 default: return;
             }
             if(step(x, y, playerX + x, playerY + y))
