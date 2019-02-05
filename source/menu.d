@@ -33,7 +33,7 @@ class MenuScene: Scene
 
         gui = New!NuklearGUI(eventManager, assetManager);	
         fontTitle = gui.addFont(aFontDroidSans, 40);
-        fontNormal = gui.addFont(aFontDroidSans, 20, [ 0x0020, 0x01FF, 0 ]); // inlcude utf glyph range with polish characters
+        fontNormal = gui.addFont(aFontDroidSans, 20, gui.fontLatinExtendedAGlyphRanges); // inlcude utf glyph range with polish characters
         gui.generateFontAtlas();
 
         auto eNuklear = createEntity2D();

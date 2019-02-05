@@ -49,13 +49,13 @@ class GameScene: Scene
 
         auto eNuklear = createEntity2D();
         eNuklear.drawable = gui;
-
-        loadMap(levelToLoad);
     }
 
 	override void onStart()
     {
         super.onStart();
+
+        loadMap(levelToLoad);
     }
 
     int loadMap(int i)
@@ -104,7 +104,7 @@ class GameScene: Scene
                     boxes++;
                     goto case;
                 case '#':
-                    case ' ':
+                case ' ':
                 case '.':
                     map[y][x] = ch;
                     break;
