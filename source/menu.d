@@ -5,7 +5,7 @@ import game;
 
 class MenuScene: Scene
 {
-    enum Menu { MainMenu, LevelMenu, About }
+    enum Menu { mainMenu, levelMenu, about }
 
     FontAsset aFontDroidSans;
     TextureAsset aDagonLogo;
@@ -14,7 +14,7 @@ class MenuScene: Scene
     NkFont* fontTitle;
     NkFont* fontNormal;
 
-    Menu current = Menu.MainMenu;
+    Menu current;
 
     this(SceneManager smngr)
     {
@@ -43,6 +43,7 @@ class MenuScene: Scene
 	override void onStart()
     {
         super.onStart();
+        current = Menu.mainMenu;
     }
 
     override void onKeyDown(int key)
@@ -77,15 +78,13 @@ class MenuScene: Scene
         gui.inputScroll(x, y);
     }
 
-    bool goToGame = false;
-
     override void onLogicsUpdate(double dt)
     {
         int w = 400;
         int h = 400;
         auto rect = NkRect((1280-w)/2, (720-h)/2, w, h); // calculate rectancle in center
 
-        if(current == Menu.MainMenu)
+        if(current == Menu.mainMenu)
         {
             if (gui.begin("MainMenu", rect, NK_WINDOW_NO_SCROLLBAR))
             {
@@ -94,16 +93,16 @@ class MenuScene: Scene
                 gui.labelColored("DagoBan", NK_TEXT_CENTERED, NkColor(254,50,50,200));
 
                 gui.styleSetFont(fontNormal);
-                if(gui.buttonLabel("New game")) current = Menu.LevelMenu;
+                if(gui.buttonLabel("New game")) current = Menu.levelMenu;
                 //gui.buttonLabel("Level editor");
-                if(gui.buttonLabel("About")) current = Menu.About;
+                if(gui.buttonLabel("About")) current = Menu.about;
                 gui.layoutRowDynamic(150, 1); // make empty space
                 gui.layoutRowDynamic(50, 1);
                 if(gui.buttonLabel("Exit")) exitApplication();
             }
             gui.end();
         }
-        else if(current == Menu.LevelMenu)
+        else if(current == Menu.levelMenu)
         {
             if (gui.begin("LevelMenu", rect, NK_WINDOW_NO_SCROLLBAR))
             {
@@ -127,11 +126,11 @@ class MenuScene: Scene
                     gui.groupEnd();
                 }
                 gui.layoutRowDynamic(50, 1);
-                if(gui.buttonLabel("Back")) current = Menu.MainMenu;
+                if(gui.buttonLabel("Back")) current = Menu.mainMenu;
             }
             gui.end();
         }
-        else if(current == Menu.About)
+        else if(current == Menu.about)
         {
             if (gui.begin("About", rect, NK_WINDOW_NO_SCROLLBAR))
             {
@@ -145,7 +144,7 @@ class MenuScene: Scene
 
                 gui.layoutRowDynamic(160, 1); // make empty space
                 gui.layoutRowDynamic(50, 1);
-                if(gui.buttonLabel("Back")) current = Menu.MainMenu;
+                if(gui.buttonLabel("Back")) current = Menu.mainMenu;
             }
             gui.end();
         }
