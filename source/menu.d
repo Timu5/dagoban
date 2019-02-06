@@ -94,9 +94,9 @@ class MenuScene: Scene
 
                 gui.styleSetFont(fontNormal);
                 if(gui.buttonLabel("New game")) current = Menu.levelMenu;
-                //gui.buttonLabel("Level editor");
+                if(gui.buttonLabel("Level editor")) sceneManager.goToScene("EditorScene", false);
                 if(gui.buttonLabel("About")) current = Menu.about;
-                gui.layoutRowDynamic(150, 1); // make empty space
+                gui.layoutRowDynamic(100, 1); // make empty space
                 gui.layoutRowDynamic(50, 1);
                 if(gui.buttonLabel("Exit")) exitApplication();
             }
@@ -148,6 +148,9 @@ class MenuScene: Scene
             }
             gui.end();
         }
+
+        gui.canvasBegin("canvas", NkRect(0,0,1280,720), NkColor(0,0,0,0));
+        gui.canvasEnd();
     }
 
     override void onRelease()
