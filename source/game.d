@@ -87,6 +87,7 @@ class GameScene: Scene
                 return -1;
         }
         if(ch == ';') while((ch = aLevels.text[index++]) != '\n') {}
+        bool canLoadEmpty = false;
         while(ch != ';')
         {
             ch = aLevels.text[index++];
@@ -99,6 +100,7 @@ class GameScene: Scene
                         width = width > x ? width : x;
                         x = 0;
                     }
+                    canLoadEmpty = false;
                     continue;
                 case '*':
                     score++;
@@ -107,9 +109,13 @@ class GameScene: Scene
                     boxes++;
                     goto case;
                 case '#':
-                case ' ':
                 case '.':
                     map[y][x] = ch;
+                    canLoadEmpty = true;
+                    break;
+                case ' ':
+                    if(canLoadEmpty)
+                        map[y][x] = ch;
                     break;
                 case '@':
                     playerX = x * 64;
@@ -174,7 +180,7 @@ class GameScene: Scene
         img.region[1] = cast(short)sy;
         img.region[2] = 64;
         img.region[3] = 64;
-        gui.drawImage(NkRect(x + 1280/2 - width*32, y + 720/2 - width*32 - 64, 64, 64), &img, NkColor(255,255,255,255));
+        gui.drawImage(NkRect(x + 1280/2 - width*32, y + 720/2 - height*32, 64, 64), &img, NkColor(255,255,255,255));
     }
 
     void draw()
