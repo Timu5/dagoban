@@ -13,7 +13,7 @@ class GameScene: Scene
     TextAsset aLevels;
 
     NuklearGUI gui;
-    NkFont* font;
+    NKFont* font;
 
     int width;
     int height;
@@ -45,7 +45,7 @@ class GameScene: Scene
     {
         super.onAllocate();
 
-        gui = New!NuklearGUI(eventManager, assetManager);	
+        gui = New!NuklearGUI(eventManager, assetManager);
         font = gui.addFont(aFontDroidSans, 20);
         gui.generateFontAtlas();
 
@@ -53,7 +53,7 @@ class GameScene: Scene
         eNuklear.drawable = gui;
     }
 
-	override void onStart()
+    override void onStart()
     {
         super.onStart();
 
@@ -175,12 +175,12 @@ class GameScene: Scene
 
     void drawSprite(int x, int y, int sx, int sy)
     {
-        NkImage img = aTexSokoban.texture.toNuklearImage;
+        NKImage img = aTexSokoban.texture.toNKImage;
         img.region[0] = cast(short)sx;
         img.region[1] = cast(short)sy;
         img.region[2] = 64;
         img.region[3] = 64;
-        gui.drawImage(NkRect(x + 1280/2 - width*32, y + 720/2 - height*32, 64, 64), &img, NkColor(255,255,255,255));
+        gui.drawImage(NKRect(x + 1280/2 - width*32, y + 720/2 - height*32, 64, 64), &img, NKColor(255,255,255,255));
     }
 
     void draw()
@@ -317,7 +317,7 @@ class GameScene: Scene
             input = 'd';
         logic(input);
 
-        if (gui.begin("StatsMenu", NkRect(0, 0, 130, 92), NK_WINDOW_NO_SCROLLBAR))
+        if (gui.begin("StatsMenu", NKRect(0, 0, 130, 92), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(10, 1);
             gui.labelf(NK_TEXT_LEFT, "Level: %d/117", levelToLoad + 1);
@@ -333,7 +333,7 @@ class GameScene: Scene
         }
         gui.end();
 
-        if(gui.canvasBegin("canvas", NkRect(0, 0, 1280, 720), NkColor(0,0,255,0)))
+        if(gui.canvasBegin("canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
         {
             draw();
         }

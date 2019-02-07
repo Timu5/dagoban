@@ -11,8 +11,8 @@ class MenuScene: Scene
     TextureAsset aDagonLogo;
     
     NuklearGUI gui;
-    NkFont* fontTitle;
-    NkFont* fontNormal;
+    NKFont* fontTitle;
+    NKFont* fontNormal;
 
     Menu current;
 
@@ -31,7 +31,7 @@ class MenuScene: Scene
     {
         super.onAllocate();
 
-        gui = New!NuklearGUI(eventManager, assetManager);	
+        gui = New!NuklearGUI(eventManager, assetManager);
         fontTitle = gui.addFont(aFontDroidSans, 40);
         fontNormal = gui.addFont(aFontDroidSans, 20, gui.fontLatinExtendedAGlyphRanges); // inlcude utf glyph range with polish characters
         gui.generateFontAtlas();
@@ -40,7 +40,7 @@ class MenuScene: Scene
         eNuklear.drawable = gui;
     }
 
-	override void onStart()
+    override void onStart()
     {
         super.onStart();
         current = Menu.mainMenu;
@@ -82,7 +82,7 @@ class MenuScene: Scene
     {
         int w = 400;
         int h = 400;
-        auto rect = NkRect((1280-w)/2, (720-h)/2, w, h); // calculate rectancle in center
+        auto rect = NKRect((1280-w)/2, (720-h)/2, w, h); // calculate rectancle in center
 
         if(current == Menu.mainMenu)
         {
@@ -90,7 +90,7 @@ class MenuScene: Scene
             {
                 gui.layoutRowDynamic(50, 1);
                 gui.styleSetFont(fontTitle);
-                gui.labelColored("DagoBan", NK_TEXT_CENTERED, NkColor(254,50,50,200));
+                gui.labelColored("DagoBan", NK_TEXT_CENTERED, NKColor(254,50,50,200));
 
                 gui.styleSetFont(fontNormal);
                 if(gui.buttonLabel("New game")) current = Menu.levelMenu;
@@ -140,7 +140,7 @@ class MenuScene: Scene
                 gui.label("This game is built on top of Dagon Engine!", NK_TEXT_ALIGN_LEFT);
 
                 gui.layoutRowStatic(66, 200, 1);
-                gui.image(aDagonLogo.texture.toNuklearImage);
+                gui.image(aDagonLogo.texture.toNKImage);
 
                 gui.layoutRowDynamic(160, 1); // make empty space
                 gui.layoutRowDynamic(50, 1);
@@ -149,7 +149,7 @@ class MenuScene: Scene
             gui.end();
         }
 
-        gui.canvasBegin("canvas", NkRect(0,0,1280,720), NkColor(0,0,0,0));
+        gui.canvasBegin("canvas", NKRect(0,0,1280,720), NKColor(45,45,45,255));
         gui.canvasEnd();
     }
 

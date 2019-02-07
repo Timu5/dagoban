@@ -10,7 +10,7 @@ class EditorScene: Scene
     TextAsset aLevels;
 
     NuklearGUI gui;
-    NkFont* font;
+    NKFont* font;
 
     int width;
     int height;
@@ -41,7 +41,7 @@ class EditorScene: Scene
     {
         super.onAllocate();
 
-        gui = New!NuklearGUI(eventManager, assetManager);	
+        gui = New!NuklearGUI(eventManager, assetManager);
         font = gui.addFont(aFontDroidSans, 20);
         gui.generateFontAtlas();
 
@@ -49,7 +49,7 @@ class EditorScene: Scene
         eNuklear.drawable = gui;
     }
 
-	override void onStart()
+    override void onStart()
     {
         super.onStart();
 
@@ -137,6 +137,7 @@ class EditorScene: Scene
         {
             int x = (eventManager.mouseX - 250 - 32) / 64;
             int y = (eventManager.mouseY) / 64;
+            if(x < 0 || y < 0) return;
             if(selected == '-')
                 map[y][x] = 0;
             else if(selected == '$' && map[y][x] == '.')
@@ -164,9 +165,9 @@ class EditorScene: Scene
     }
 
 
-    NkImage sprite(int sx, int sy)
+    NKImage sprite(int sx, int sy)
     {
-        NkImage img = aTexSokoban.texture.toNuklearImage;
+        NKImage img = aTexSokoban.texture.toNKImage;
         img.region[0] = cast(short)sx;
         img.region[1] = cast(short)sy;
         img.region[2] = 64;
@@ -176,8 +177,8 @@ class EditorScene: Scene
 
     void drawSprite(int x, int y, int sx, int sy)
     {
-        NkImage img = sprite(sx, sy);
-        gui.drawImage(NkRect(250 + x + 1280/2 - 19*32, y + 720/2 - 11*32, 64, 64), &img, NkColor(255,255,255,255));
+        NKImage img = sprite(sx, sy);
+        gui.drawImage(NKRect(250 + x + 1280/2 - 19*32, y + 720/2 - 11*32, 64, 64), &img, NKColor(255,255,255,255));
     }
 
     void draw()
@@ -211,6 +212,7 @@ class EditorScene: Scene
         {
             int x = (eventManager.mouseX - 250 - 32) / 64 * 64;
             int y = (eventManager.mouseY) / 64 * 64;
+            if(x <= 0 || y <= 0) return;
             switch(selected)
             {
                 case '#': drawSprite(x, y,  6*64, 6*64); break;
@@ -226,32 +228,11 @@ class EditorScene: Scene
 
     override void onLogicsUpdate(double dt)
     {
-        if (gui.begin("StatsMenu", NkRect(0, 0, 250, 720), NK_WINDOW_NO_SCROLLBAR))
+        if (gui.begin("StatsMenu", NKRect(0, 0, 250, 720), NK_WINDOW_NO_SCROLLBAR))
         {
-            gui.layoutRowDynamic(15, 1);
-            gui.labelf(NK_TEXT_LEFT, "Level: %d/117", 1);
-            gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
-            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
-
-            gui.layoutRowDynamic(50, 2);
-            //if(gui.buttonLabel("Load")) showLoad = true;//loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-            //if(gui.buttonLabel("Save")) loadMap(levelToLoad = (++levelToLoad)%117);
-
-            gui.layoutRowDynamic(100, 2);
-            if(gui.buttonImage(sprite( 6*64, 6*64))) selected = '#';
-            if(gui.buttonImage(sprite(11*64, 1*64))) selected = '.';
-            if(gui.buttonImage(sprite( 1*64, 0*64))) selected = '$';
-            if(gui.buttonImage(sprite(11*64, 0*64))) selected = ' ';
-            if(gui.buttonImage(sprite( 0*64, 4*64))) selected = '+';
-            if(gui.buttonLabel("Delete")) selected = '-';
-
-            gui.layoutRowDynamic(50, 1);
-            //if(gui.buttonLabel("Play")) sceneManager.goToScene("GameScene", false);         
-            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);
-
             if (showLoad)
             {
-                if (gui.popupBegin(NK_POPUP_STATIC, "LoadLevel", 0, NkRect(0, 0, 250, 720)))
+                if (gui.popupBegin(NK_POPUP_STATIC, "LoadLevel", 0, NKRect(0, 0, 250, 720)))
                 {
                     gui.layoutRowDynamic(25, 1);
                     gui.label("A terrible error as occured", NK_TEXT_LEFT);
@@ -276,36 +257,55 @@ class EditorScene: Scene
 
             if (showSave)
             {
-                if (gui.popupBegin(NK_POPUP_STATIC, "SaveLevel", 0, NkRect(0, 0, 250, 720)))
+                if (gui.popupBegin(NK_POPUP_STATIC, "SaveLevel", 0, NKRect(0, 0, 250, 720)))
                 {
                     gui.layoutRowDynamic(25, 1);
                     gui.label("A terrible error as occured", NK_TEXT_LEFT);
                     gui.layoutRowDynamic(25, 2);
                     if (gui.buttonLabel("OK"))
                     {
-                        showLoad = false;
+                        showSave = false;
                         gui.popupClose();
                     }
                     if (gui.buttonLabel("Cancel"))
                     {
-                        showLoad = false;
+                        showSave = false;
                         gui.popupClose();
                     }
                     gui.popupEnd();
                 }
                 else
                 {
-                    showLoad = false;
+                    showSave = false;
                 }
             }
+
+            gui.layoutRowDynamic(15, 1);
+            gui.labelf(NK_TEXT_LEFT, "Level: %d/117", 1);
+            gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
+            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
+
+            gui.layoutRowDynamic(50, 2);
+            if(gui.buttonLabel("Load")) showLoad = true;//loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
+            //if(gui.buttonLabel("Save")) loadMap(levelToLoad = (++levelToLoad)%117);
+
+            gui.layoutRowDynamic(100, 2);
+            if(gui.buttonImage(sprite( 6*64, 6*64))) selected = '#';
+            if(gui.buttonImage(sprite(11*64, 1*64))) selected = '.';
+            if(gui.buttonImage(sprite( 1*64, 0*64))) selected = '$';
+            if(gui.buttonImage(sprite(11*64, 0*64))) selected = ' ';
+            if(gui.buttonImage(sprite( 0*64, 4*64))) selected = '+';
+            if(gui.buttonLabel("Delete")) selected = '-';
+
+            gui.layoutRowDynamic(50, 1);
+            //if(gui.buttonLabel("Play")) sceneManager.goToScene("GameScene", false);         
+            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);
         }
         gui.end();
 
-        if(gui.canvasBegin("canvas", NkRect(0, 0, 1280, 720), NkColor(0,0,0,0)))
-        {
+        if(gui.canvasBegin("kure_a_moze_inna_nawaza_canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
             draw();
-        }
-        gui.canvasEnd();
+       gui.canvasEnd();
     }
 
     override void onRelease()
