@@ -4,6 +4,15 @@ import dagon;
 
 enum Direction { up, down, left, right }
 
+struct Undo
+{
+    int playerX;
+    int playerY;
+    int playerDirection;
+    int score;
+    int steps;
+}
+
 class GameScene: Scene
 {
     static int levelToLoad = 0;
@@ -28,6 +37,10 @@ class GameScene: Scene
     int score;
     int steps;
     int pushes;
+
+    Undo[10] undos;
+    int undoStart;
+    int undoSize;
 
     this(SceneManager smngr)
     {
@@ -145,6 +158,8 @@ class GameScene: Scene
             loadMap(levelToLoad = (++levelToLoad)%117);
         if(key == KEY_P)
             loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
+        if(key == KEY_U && !playerInMove)
+            doUndo();
     }
 
     override void onKeyUp(int key)
@@ -219,6 +234,68 @@ class GameScene: Scene
         }
     }
 
+
+    void addUndo()
+    {
+        Undo undo = Undo(playerX, playerY, playerDirection);
+        undos[undoStart] = undo;
+        undoStart++;
+        undoStart = undoStart % 10;
+        if(undoSize < 10)
+            undoSize++;
+    }
+
+    void doUndo()
+    {
+        if(undoSize)
+        {
+            Undo u;
+            undoSize--;
+            undoStart--;
+            if(undoStart == -1)
+                undoStart = 9;
+
+            u = undos[undoStart];
+            playerX = u.playerX;
+            playerY = u.playerY;
+            playerDirection = u.playerDirection;
+            int x = 0;
+            int y = 0;
+            switch(playerDirection)
+            {
+                case Direction.up:    y--; break;
+                case Direction.down:  y++; break;
+                case Direction.left:  x--; break;
+                case Direction.right: x++; break;
+                default: break;
+            }
+            int ox = x + playerX/64;
+            int oy = y + playerY/64;
+            int bx = x + ox;
+            int by = y + oy;
+            if(map[by][bx] == '*')
+            {
+                map[by][bx] = '.';
+                score--;
+            }
+            else if(map[by][bx] == '$')
+            {
+                map[by][bx] = ' ';
+            }
+
+            if(map[oy][ox] == '.')
+            {
+                map[oy][ox] = '*';
+                score++;
+            }
+            else if(map[oy][ox] == ' ')
+            {
+                map[oy][ox] = '$';
+            }
+
+        }
+    }
+
     int step(int rx, int ry, int x, int y)
     {
         if(map[y][x] == '#')
@@ -230,6 +307,8 @@ class GameScene: Scene
         {
             if(map[by][bx] != ' ' && map[by][bx] != '.')
                 return 0;
+
+            addUndo();
 
             if(map[y][x] == '*')
                 score--;
@@ -317,7 +396,7 @@ class GameScene: Scene
             input = 'd';
         logic(input);
 
-        if (gui.begin("StatsMenu", NKRect(0, 0, 130, 92), NK_WINDOW_NO_SCROLLBAR))
+        if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(10, 1);
             gui.labelf(NK_TEXT_LEFT, "Level: %d/117", levelToLoad + 1);
@@ -329,7 +408,10 @@ class GameScene: Scene
             if(gui.buttonLabel("Next")) loadMap(levelToLoad = (++levelToLoad)%117); 
 
             gui.layoutRowDynamic(20, 1);
-            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);         
+            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
+
+            gui.layoutRowDynamic(30, 1);
+            if(undoSize && gui.buttonLabel("Undo") && !playerInMove) doUndo();  
         }
         gui.end();
 
