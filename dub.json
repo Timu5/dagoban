@@ -3,11 +3,11 @@
 		"Mateusz Muszyński"
 	],
 	"copyright": "Copyright © 2019, Mateusz Muszyński",
-	"description": "MY game",
-	"license": "MIT",
+	"description": "Sokoban clone",
+	"license": "GPL3",
 	"name": "dagoban",
 	
 	"dependencies": {
-        "dagon":  {"path":"../dagon/"}
+        "dagon": "~master"
     },
 }
