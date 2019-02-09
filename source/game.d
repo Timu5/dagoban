@@ -9,7 +9,6 @@ struct Undo
     int playerX;
     int playerY;
     int playerDirection;
-    int score;
     int steps;
 }
 
@@ -84,6 +83,7 @@ class GameScene: Scene
         score = 0;
         steps = 0;
         pushes = 0;
+        undoSize = 0;
         for(int k = 0; k < 20; k++)
             for(int j = 0; j < 20; j++)
                 map[k][j] = 0;
@@ -237,7 +237,7 @@ class GameScene: Scene
 
     void addUndo()
     {
-        Undo undo = Undo(playerX, playerY, playerDirection);
+        Undo undo = Undo(playerX, playerY, playerDirection, steps);
         undos[undoStart] = undo;
         undoStart++;
         undoStart = undoStart % 10;
@@ -249,16 +249,18 @@ class GameScene: Scene
     {
         if(undoSize)
         {
-            Undo u;
             undoSize--;
             undoStart--;
             if(undoStart == -1)
                 undoStart = 9;
 
-            u = undos[undoStart];
+            Undo u = undos[undoStart];
             playerX = u.playerX;
             playerY = u.playerY;
             playerDirection = u.playerDirection;
+            steps = u.steps;
+            pushes--;
+
             int x = 0;
             int y = 0;
             switch(playerDirection)
@@ -273,25 +275,15 @@ class GameScene: Scene
             int oy = y + playerY/64;
             int bx = x + ox;
             int by = y + oy;
+
             if(map[by][bx] == '*')
-            {
-                map[by][bx] = '.';
                 score--;
-            }
-            else if(map[by][bx] == '$')
-            {
-                map[by][bx] = ' ';
-            }
 
             if(map[oy][ox] == '.')
-            {
-                map[oy][ox] = '*';
                 score++;
-            }
-            else if(map[oy][ox] == ' ')
-            {
-                map[oy][ox] = '$';
-            }
+
+            map[by][bx] = map[by][bx] == '*' ? '.' : ' ';
+            map[oy][ox] = map[oy][ox] == '.' ? '*' : '$';
 
         }
     }
