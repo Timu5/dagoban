@@ -241,7 +241,7 @@ class GameScene: Scene
         undos[undoStart] = undo;
         undoStart++;
         undoStart = undoStart % 10;
-        if(undoSize < 10)
+        if(undoSize < maxUndos)
             undoSize++;
     }
 
@@ -252,7 +252,7 @@ class GameScene: Scene
             undoSize--;
             undoStart--;
             if(undoStart == -1)
-                undoStart = 9;
+                undoStart = maxUndos - 1;
 
             Undo u = undos[undoStart];
             playerX = u.playerX;
