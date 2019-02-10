@@ -407,6 +407,42 @@ class GameScene: Scene
         }
         gui.end();
 
+        debug
+        {
+            if (gui.begin("FPS Chart", NKRect(1020, 500, 230, 220), NK_WINDOW_BORDER | NK_WINDOW_TITLE))
+            {
+                static float[60] fpsTable;
+                static int fpsTableIndex = 0;
+
+                fpsTable[fpsTableIndex] = 1 / eventManager.deltaTime;
+                fpsTableIndex = (++fpsTableIndex) % 60;
+
+                gui.layoutRowDynamic(100, 1);
+                auto bounds = gui.widgetBounds();
+                float max = -1000;
+                float min = 1000;
+                if (gui.chartBegin(NK_CHART_LINES, 30, 0, 70.0f))
+                {
+                    for (int i = 0; i < 30; i++)
+                    {
+                        int index = (fpsTableIndex + i*2) % 60;
+                        int index2 = (fpsTableIndex % 2 == 1) ? (index+1) % 60 : (index-1) < 0 ? 59 : index - 1;
+                        float value = (fpsTable[index] + fpsTable[index2])/2;
+                        gui.chartPush(value);
+
+                        if(value > max) max = value;
+                        if(value < min) min = value;
+                    }
+                    gui.chartEnd();
+                }
+                gui.layoutRowDynamic(15, 1);
+                gui.labelf(NK_TEXT_LEFT, "Max FPS: %.2f", cast(double)max);
+                gui.labelf(NK_TEXT_LEFT, "Min FPS: %.2f", cast(double)min);
+                gui.labelf(NK_TEXT_LEFT, "Avg FPS: %d", eventManager.fps);
+            }
+            gui.end();
+        }
+
         if(gui.canvasBegin("canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
         {
             draw();
