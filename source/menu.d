@@ -34,7 +34,6 @@ class MenuScene: Scene
         gui = New!NuklearGUI(eventManager, assetManager);
         fontTitle = gui.addFont(aFontDroidSans, 40);
         fontNormal = gui.addFont(aFontDroidSans, 20, gui.fontLatinExtendedAGlyphRanges); // inlcude utf glyph range with polish characters
-        gui.generateFontAtlas();
 
         auto eNuklear = createEntity2D();
         eNuklear.drawable = gui;
@@ -116,6 +115,7 @@ class MenuScene: Scene
                     gui.layoutRowDynamic(50, 5);
                     for(int i = 0; i < 117; i++)
                     {
+                        import core.stdc.stdio;
                         snprintf(buffer.ptr, 255, "%d", i+1);
                         if(gui.buttonLabel(buffer.ptr)) 
                         {
@@ -150,6 +150,7 @@ class MenuScene: Scene
         }
 
         gui.canvasBegin("canvas", NKRect(0,0,1280,720), NKColor(45,45,45,255));
+        // empty canvas just to fill background
         gui.canvasEnd();
     }
 

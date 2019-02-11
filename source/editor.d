@@ -43,7 +43,6 @@ class EditorScene: Scene
 
         gui = New!NuklearGUI(eventManager, assetManager);
         font = gui.addFont(aFontDroidSans, 20);
-        gui.generateFontAtlas();
 
         auto eNuklear = createEntity2D();
         eNuklear.drawable = gui;
@@ -230,6 +229,27 @@ class EditorScene: Scene
     {
         if (gui.begin("StatsMenu", NKRect(0, 0, 250, 720), NK_WINDOW_NO_SCROLLBAR))
         {
+            gui.layoutRowDynamic(15, 1);
+            gui.labelf(NK_TEXT_LEFT, "Level: %d/117", 1);
+            gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
+            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
+
+            gui.layoutRowDynamic(50, 2);
+            if(gui.buttonLabel("Load")) showLoad = true;//loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
+            //if(gui.buttonLabel("Save")) loadMap(levelToLoad = (++levelToLoad)%117);
+
+            gui.layoutRowDynamic(100, 2);
+            if(gui.buttonImage(sprite( 6*64, 6*64))) selected = '#';
+            if(gui.buttonImage(sprite(11*64, 1*64))) selected = '.';
+            if(gui.buttonImage(sprite( 1*64, 0*64))) selected = '$';
+            if(gui.buttonImage(sprite(11*64, 0*64))) selected = ' ';
+            if(gui.buttonImage(sprite( 0*64, 4*64))) selected = '+';
+            if(gui.buttonLabel("Delete")) selected = '-';
+
+            gui.layoutRowDynamic(50, 1);
+            //if(gui.buttonLabel("Play")) sceneManager.goToScene("GameScene", false);         
+            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);
+
             if (showLoad)
             {
                 if (gui.popupBegin(NK_POPUP_STATIC, "LoadLevel", 0, NKRect(0, 0, 250, 720)))
@@ -279,33 +299,14 @@ class EditorScene: Scene
                     showSave = false;
                 }
             }
-
-            gui.layoutRowDynamic(15, 1);
-            gui.labelf(NK_TEXT_LEFT, "Level: %d/117", 1);
-            gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
-            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
-
-            gui.layoutRowDynamic(50, 2);
-            if(gui.buttonLabel("Load")) showLoad = true;//loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-            //if(gui.buttonLabel("Save")) loadMap(levelToLoad = (++levelToLoad)%117);
-
-            gui.layoutRowDynamic(100, 2);
-            if(gui.buttonImage(sprite( 6*64, 6*64))) selected = '#';
-            if(gui.buttonImage(sprite(11*64, 1*64))) selected = '.';
-            if(gui.buttonImage(sprite( 1*64, 0*64))) selected = '$';
-            if(gui.buttonImage(sprite(11*64, 0*64))) selected = ' ';
-            if(gui.buttonImage(sprite( 0*64, 4*64))) selected = '+';
-            if(gui.buttonLabel("Delete")) selected = '-';
-
-            gui.layoutRowDynamic(50, 1);
-            //if(gui.buttonLabel("Play")) sceneManager.goToScene("GameScene", false);         
-            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);
         }
         gui.end();
 
-        if(gui.canvasBegin("kure_a_moze_inna_nawaza_canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
+        if(gui.canvasBegin("canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
+        {
             draw();
-       gui.canvasEnd();
+        }
+        gui.canvasEnd();
     }
 
     override void onRelease()

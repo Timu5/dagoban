@@ -37,13 +37,26 @@ class GameScene: Scene
     int steps;
     int pushes;
 
-    Undo[10] undos;
+    enum maxUndos = 20;
+    Undo[maxUndos] undos;
     int undoStart;
     int undoSize;
+
+    InputManager input;
 
     this(SceneManager smngr)
     {
         super(smngr);
+        input = New!InputManager(eventManager);
+        input.setBinding("UP", "kb_up");
+        input.setBinding("DOWN", "kb_down");
+        input.setBinding("RIGHT", "kb_right");
+        input.setBinding("LEFT", "kb_left");
+    }
+
+    ~this()
+    {
+        Delete(input);
     }
 
     override void onAssetsRequest()
@@ -59,7 +72,6 @@ class GameScene: Scene
 
         gui = New!NuklearGUI(eventManager, assetManager);
         font = gui.addFont(aFontDroidSans, 20);
-        gui.generateFontAtlas();
 
         auto eNuklear = createEntity2D();
         eNuklear.drawable = gui;
@@ -377,16 +389,20 @@ class GameScene: Scene
 
     override void onLogicsUpdate(double dt)
     {
-        char input = 0;
-        if(eventManager.keyPressed[KEY_UP] || eventManager.keyPressed[KEY_W])
-            input = 'w';
-        if(eventManager.keyPressed[KEY_DOWN] || eventManager.keyPressed[KEY_S])
-            input = 's';
-        if(eventManager.keyPressed[KEY_LEFT] || eventManager.keyPressed[KEY_A])
-            input = 'a';
-        if(eventManager.keyPressed[KEY_RIGHT] || eventManager.keyPressed[KEY_D])
-            input = 'd';
-        logic(input);
+        char key = 0;
+
+        if(input.getButton("UP"))
+            key = 'w';
+
+        if(input.getButton("DOWN"))
+            key = 's';
+
+        if(input.getButton("LEFT"))
+            key = 'a';
+
+        if(input.getButton("RIGHT"))
+            key = 'd';
+        logic(key);
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
