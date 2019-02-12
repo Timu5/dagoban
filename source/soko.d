@@ -1,26 +1,29 @@
 module soko;
 
-enum Direction { up, down, left, right }
+import dagon;
+
+enum Direction { none, up, down, left, right }
 
 struct Undo
 {
-    int playerX;
-    int playerY;
-    int playerDirection;
+    ivec2 pos;
+    Direction dir;
     int steps;
 }
 
 class Sokoban
 {
-    int width;
-    int height;
     char[20][20] map;
-    bool playerInMove;
-    int playerX;
-    int playerY;
-    int playerDirection;
-    int boxX;
-    int boxY;
+    int mapWidth;
+    int mapHeight;
+
+    bool inMove;
+
+    ivec2 playerPos;
+    Direction playerDir;
+
+    ivec2 boxPos; // Currently sliding box
+
     int boxes;
     int score;
     int steps;
@@ -38,11 +41,11 @@ class Sokoban
 
     void reset()
     {
-        playerInMove = false;
-        playerDirection = Direction.down;
-        boxX = -1;
-        width = 0;
-        height = 0;
+        inMove = false;
+        playerDir = Direction.down;
+        boxPos.x = -1;
+        mapWidth = 0;
+        mapHeight = 0;
         boxes = 0;
         score = 0;
         steps = 0;
@@ -79,7 +82,7 @@ class Sokoban
                     if(x > 0)
                     {
                         y++;
-                        width = width > x ? width : x;
+                        mapWidth = mapWidth > x ? mapWidth : x;
                         x = 0;
                     }
                     canLoadEmpty = false;
@@ -100,13 +103,11 @@ class Sokoban
                         map[y][x] = ch;
                     break;
                 case '@':
-                    playerX = x * 64;
-                    playerY = y * 64;
+                    playerPos = ivec2(x * 64, y * 64);
                     map[y][x] = ' ';
                     break;
                 case '+':
-                    playerX = x * 64;
-                    playerY = y * 64;
+                    playerPos = ivec2(x * 64, y * 64);
                     map[y][x] = '.';
                     break;
                 default:
@@ -114,16 +115,16 @@ class Sokoban
             }
             x++;
         }
-        height = y;
+        mapHeight = y;
         return 1;
     }
 
     void addUndo()
     {
-        Undo undo = Undo(playerX, playerY, playerDirection, steps);
+        Undo undo = Undo(playerPos, playerDir, steps);
         undos[undoStart] = undo;
         undoStart++;
-        undoStart = undoStart % 10;
+        undoStart = undoStart % maxUndos;
         if(undoSize < maxUndos)
             undoSize++;
     }
@@ -138,15 +139,15 @@ class Sokoban
                 undoStart = maxUndos - 1;
 
             Undo u = undos[undoStart];
-            playerX = u.playerX;
-            playerY = u.playerY;
-            playerDirection = u.playerDirection;
+            playerPos.x = u.pos.x;
+            playerPos.y = u.pos.y;
+            playerDir = u.dir;
             steps = u.steps;
             pushes--;
 
             int x = 0;
             int y = 0;
-            switch(playerDirection)
+            switch(playerDir)
             {
                 case Direction.up:    y--; break;
                 case Direction.down:  y++; break;
@@ -154,8 +155,8 @@ class Sokoban
                 case Direction.right: x++; break;
                 default: break;
             }
-            int ox = x + playerX/64;
-            int oy = y + playerY/64;
+            int ox = x + playerPos.x/64;
+            int oy = y + playerPos.y/64;
             int bx = x + ox;
             int by = y + oy;
 
@@ -171,94 +172,86 @@ class Sokoban
         }
     }
 
-    int step(int rx, int ry, int x, int y)
+    int step(ivec2 dir, ivec2 pos)
     {
-        if(map[y][x] == '#')
+        if(map[pos.y][pos.x] == '#')
             return 0;
-
-        int bx = x + rx;
-        int by = y + ry;
-        if(map[y][x] == '$' || map[y][x] == '*')
+      
+        if(map[pos.y][pos.x] == '$' || map[pos.y][pos.x] == '*')
         {
-            if(map[by][bx] != ' ' && map[by][bx] != '.')
+            ivec2 b = pos + dir;
+
+            if(map[b.y][b.x] != ' ' && map[b.y][b.x] != '.')
                 return 0;
 
             addUndo();
 
-            if(map[y][x] == '*')
+            if(map[pos.y][pos.x] == '*')
                 score--;
 
-            map[y][x] = map[y][x] == '*' ? '.' : ' ';
+            map[pos.y][pos.x] = map[pos.y][pos.x] == '*' ? '.' : ' ';
 
             pushes++;
 
-            boxX = x * 64 + rx * 4;
-            boxY = y * 64 + ry * 4;
+            boxPos = pos * 64 + dir * 4;
         }
 
         steps++;
         return 1;
     }
 
-    void logic(int ch)
+    void logic(Direction dir)
     {
-        if(!playerInMove)
+        if(!inMove)
         {
-            // player idle
-            int x = 0;
-            int y = 0;
-            switch(ch)
+            if(dir != Direction.none)
             {
-                case 'a': x--; playerDirection = Direction.left; break;
-                case 'd': x++; playerDirection = Direction.right; break;
-                case 'w': y--; playerDirection = Direction.up; break;
-                case 's': y++; playerDirection = Direction.down;  break;
-                default: return;
-            }
-            if(step(x, y, playerX/64 + x, playerY/64 + y))
-            {
-                playerX += x * 4;
-                playerY += y * 4;
-                playerInMove = true;
+                // player idle
+                ivec2 vdir;
+                playerDir = dir;
+                switch(dir)
+                {
+                    case Direction.left:  vdir.x--; break;
+                    case Direction.right: vdir.x++; break;
+                    case Direction.up:    vdir.y--; break;
+                    case Direction.down:  vdir.y++; break;
+                    default: return;
+                }
+                if(step(vdir, playerPos / 64 + vdir))
+                {
+                    playerPos += vdir * 4;
+                    inMove = true;
+                }
             }
         }
         else
         {
             // player in move
-            switch(playerDirection)
+            switch(playerDir)
             {
-                case Direction.up:    playerY -= 4; if(boxX != -1) boxY -= 4; break;
-                case Direction.down:  playerY += 4; if(boxX != -1) boxY += 4; break;
-                case Direction.left:  playerX -= 4; if(boxX != -1) boxX -= 4; break;
-                case Direction.right: playerX += 4; if(boxX != -1) boxX += 4; break;
+                case Direction.up:    playerPos.y -= 4; if(boxPos.x != -1) boxPos.y -= 4; break;
+                case Direction.down:  playerPos.y += 4; if(boxPos.x != -1) boxPos.y += 4; break;
+                case Direction.left:  playerPos.x -= 4; if(boxPos.x != -1) boxPos.x -= 4; break;
+                case Direction.right: playerPos.x += 4; if(boxPos.x != -1) boxPos.x += 4; break;
                 default: break;
             }
-            if((playerX % 64) == 0 && (playerY % 64) == 0)
+            if((playerPos.x % 64) == 0 && (playerPos.y % 64) == 0)
             {
-                playerInMove = false;
-                if(boxX != -1)
+                inMove = false;
+                if(boxPos.x != -1)
                 {
-                    int bx = boxX / 64;
-                    int by = boxY / 64;
+                    //int bx = boxPos.x / 64;
+                    //int by = boxPos.y / 64;
+                    ivec2 b = boxPos / 64;
 
-                    if(map[by][bx] == '.')
+                    if(map[b.y][b.x] == '.')
                         score++;
 
-                    map[by][bx] = map[by][bx] == '.' ? '*' : '$';
+                    map[b.y][b.x] = map[b.y][b.x] == '.' ? '*' : '$';
 
-                    boxX = -1;
+                    boxPos.x = -1;
                 }
             }
         }
-
-        if(score == boxes)
-        {
-            // we are done
-            //loadMap(levelToLoad=(++levelToLoad)%117);
-            // fix me!
-        }
     }
-
-
-
 }

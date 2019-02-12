@@ -87,7 +87,7 @@ class GameScene: Scene
         img.region[1] = cast(short)sy;
         img.region[2] = 64;
         img.region[3] = 64;
-        gui.drawImage(NKRect(x + 1280/2 - sokoban.width*32, y + 720/2 - sokoban.height*32, 64, 64), &img, NKColor(255,255,255,255));
+        gui.drawImage(NKRect(x + 1280/2 - sokoban.mapWidth*32, y + 720/2 - sokoban.mapHeight*32, 64, 64), &img, NKColor(255,255,255,255));
     }
 
     void draw()
@@ -110,39 +110,37 @@ class GameScene: Scene
         }
 
         // draw player
-        int frame = (sokoban.playerX % 64) / 21 +  (sokoban.playerY % 64) / 21;
-        switch(sokoban.playerDirection)
+        int frame = (sokoban.playerPos.x % 64) / 21 +  (sokoban.playerPos.y % 64) / 21;
+        switch(sokoban.playerDir)
         {
-            case Direction.up:    drawSprite(sokoban.playerX, sokoban.playerY, (3 + frame) * 64, 4*64); break;
-            case Direction.down:  drawSprite(sokoban.playerX, sokoban.playerY, (0 + frame) * 64, 4*64); break;
-            case Direction.left:  drawSprite(sokoban.playerX, sokoban.playerY, (3 + frame) * 64, 6*64); break;
-            case Direction.right: drawSprite(sokoban.playerX, sokoban.playerY, (0 + frame) * 64, 6*64); break;
+            case Direction.up:    drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (3 + frame) * 64, 4*64); break;
+            case Direction.down:  drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (0 + frame) * 64, 4*64); break;
+            case Direction.left:  drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (3 + frame) * 64, 6*64); break;
+            case Direction.right: drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (0 + frame) * 64, 6*64); break;
             default: break;
         }
 
-        if(sokoban.boxX != -1)
+        if(sokoban.boxPos.x != -1)
         {
-            drawSprite(sokoban.boxX, sokoban.boxY, 1*64, 0*64);
+            drawSprite(sokoban.boxPos.x, sokoban.boxPos.y, 1*64, 0*64);
         }
     }
 
     override void onLogicsUpdate(double dt)
     {
-        char key = 0;
+        Direction dir = Direction.none;
 
         if(inputManager.getButton("UP"))
-            key = 'w';
+            dir = Direction.up;
 
         if(inputManager.getButton("DOWN"))
-            key = 's';
+            dir = Direction.down;
 
         if(inputManager.getButton("LEFT"))
-            key = 'a';
+            dir = Direction.left;
 
         if(inputManager.getButton("RIGHT"))
-            key = 'd';
-
-        sokoban.logic(key);
+            dir = Direction.right;       
 
         if(inputManager.getButtonDown("NEXT"))
             sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%50);
@@ -150,8 +148,16 @@ class GameScene: Scene
         if(inputManager.getButtonDown("PREV"))
             sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
         
-        if(inputManager.getButtonDown("UNDO") && !sokoban.playerInMove)
+        if(inputManager.getButtonDown("UNDO") && !sokoban.inMove)
             sokoban.doUndo();
+
+        sokoban.logic(dir);
+
+        if(sokoban.score == sokoban.boxes)
+        {
+            // we are done
+            sokoban.loadMap(aLevels.text, levelToLoad=(++levelToLoad)%50);
+        }
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
@@ -168,7 +174,7 @@ class GameScene: Scene
             if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
 
             gui.layoutRowDynamic(30, 1);
-            if(sokoban.undoSize && gui.buttonLabel("Undo") && !sokoban.playerInMove) sokoban.doUndo();  
+            if(sokoban.undoSize && gui.buttonLabel("Undo") && !sokoban.inMove) sokoban.doUndo();  
         }
         gui.end();
 

@@ -12,13 +12,10 @@ class EditorScene: Scene
     NuklearGUI gui;
     NKFont* font;
 
-    int width;
-    int height;
     char[20][20] map;
-    int boxes;
-    int score;
-    int steps;
-    int pushes;
+    int mapWidth;
+    int mapHeight;
+
     int levelToLoad;
     char selected;
 
@@ -34,7 +31,7 @@ class EditorScene: Scene
     {    
         aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
         aTexSokoban = addTextureAsset("data/textures/tilesheet.png");
-        aLevels =  addTextAsset("data/levels/Zone_26.txt");
+        aLevels =  addTextAsset("data/levels/Csoko.txt");
     }
 
     override void onAllocate()
@@ -60,12 +57,8 @@ class EditorScene: Scene
 
     int loadMap(int i)
     {
-        width = 0;
-        height = 0;
-        boxes = 0;
-        score = 0;
-        steps = 0;
-        pushes = 0;
+        mapWidth = 0;
+        mapHeight = 0;
         for(int k = 0; k < 20; k++)
             for(int j = 0; j < 20; j++)
                 map[k][j] = 0;
@@ -91,16 +84,12 @@ class EditorScene: Scene
                     if(x > 0)
                     {
                         y++;
-                        width = width > x ? width : x;
+                        mapWidth = mapWidth > x ? mapWidth : x;
                         x = 0;
                     }
                     continue;
                 case '*':
-                    score++;
-                    goto case;
                 case '$':
-                    boxes++;
-                    goto case;
                 case '#':
                 case '.':
                 case ' ':
@@ -113,7 +102,7 @@ class EditorScene: Scene
             }
             x++;
         }
-        height = y;
+        mapHeight = y;
         return 1;
     }
 
@@ -230,13 +219,11 @@ class EditorScene: Scene
         if (gui.begin("StatsMenu", NKRect(0, 0, 250, 720), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(15, 1);
-            gui.labelf(NK_TEXT_LEFT, "Level: %d/117", 1);
-            gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
-            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
+            //gui.labelf(NK_TEXT_LEFT, "Level: %d", 1);
 
             gui.layoutRowDynamic(50, 2);
-            if(gui.buttonLabel("Load")) showLoad = true;//loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-            //if(gui.buttonLabel("Save")) loadMap(levelToLoad = (++levelToLoad)%117);
+            if(gui.buttonLabel("Load")) showLoad = true;
+            //if(gui.buttonLabel("Save")) ;
 
             gui.layoutRowDynamic(100, 2);
             if(gui.buttonImage(sprite( 6*64, 6*64))) selected = '#';

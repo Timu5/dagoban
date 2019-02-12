@@ -113,7 +113,7 @@ class MenuScene: Scene
                 {
                     char[255] buffer;
                     gui.layoutRowDynamic(50, 5);
-                    for(int i = 0; i < 117; i++)
+                    for(int i = 0; i < 50; i++)
                     {
                         import core.stdc.stdio;
                         snprintf(buffer.ptr, 255, "%d", i+1);
@@ -152,10 +152,5 @@ class MenuScene: Scene
         gui.canvasBegin("canvas", NKRect(0,0,1280,720), NKColor(45,45,45,255));
         // empty canvas just to fill background
         gui.canvasEnd();
-    }
-
-    override void onRelease()
-    {
-        super.onRelease();
     }
 }
