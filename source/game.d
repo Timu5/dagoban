@@ -2,6 +2,8 @@ module game;
 
 import dagon;
 
+import std.stdio;
+
 enum Direction { up, down, left, right }
 
 struct Undo
@@ -42,28 +44,16 @@ class GameScene: Scene
     int undoStart;
     int undoSize;
 
-    InputManager input;
-
     this(SceneManager smngr)
     {
         super(smngr);
-        input = New!InputManager(eventManager);
-        input.setBinding("UP", "kb_up");
-        input.setBinding("DOWN", "kb_down");
-        input.setBinding("RIGHT", "kb_right");
-        input.setBinding("LEFT", "kb_left");
-    }
-
-    ~this()
-    {
-        Delete(input);
     }
 
     override void onAssetsRequest()
     {    
         aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
         aTexSokoban = addTextureAsset("data/textures/tilesheet.png");
-        aLevels =  addTextAsset("data/levels/Zone_26.txt");
+        aLevels =  addTextAsset("data/levels/Csoko.txt");
     }
 
     override void onAllocate()
@@ -165,13 +155,6 @@ class GameScene: Scene
     {
         if (key == KEY_BACKSPACE)
             gui.inputKeyDown(NK_KEY_BACKSPACE);
-
-        if(key == KEY_N)
-            loadMap(levelToLoad = (++levelToLoad)%117);
-        if(key == KEY_P)
-            loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-        if(key == KEY_U && !playerInMove)
-            doUndo();
     }
 
     override void onKeyUp(int key)
@@ -391,23 +374,30 @@ class GameScene: Scene
     {
         char key = 0;
 
-        if(input.getButton("UP"))
+        if(inputManager.getButton("UP"))
             key = 'w';
 
-        if(input.getButton("DOWN"))
+        if(inputManager.getButton("DOWN"))
             key = 's';
 
-        if(input.getButton("LEFT"))
+        if(inputManager.getButton("LEFT"))
             key = 'a';
 
-        if(input.getButton("RIGHT"))
+        if(inputManager.getButton("RIGHT"))
             key = 'd';
         logic(key);
+
+        if(inputManager.getButtonDown("NEXT"))
+            loadMap(levelToLoad = (++levelToLoad)%50);
+        if(inputManager.getButtonDown("PREV"))
+            loadMap(levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
+        if(inputManager.getButtonDown("UNDO") && !playerInMove)
+            doUndo();
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(10, 1);
-            gui.labelf(NK_TEXT_LEFT, "Level: %d/117", levelToLoad + 1);
+            gui.labelf(NK_TEXT_LEFT, "Level: %d/50", levelToLoad + 1);
             gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
             gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
 
