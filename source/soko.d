@@ -29,7 +29,7 @@ class Sokoban
     int steps;
     int pushes;
 
-    enum maxUndos = 20;
+    enum maxUndos = 32;
     Undo[maxUndos] undos;
     int undoStart;
     int undoSize;
@@ -145,31 +145,34 @@ class Sokoban
             steps = u.steps;
             pushes--;
 
-            int x = 0;
-            int y = 0;
-            switch(playerDir)
-            {
-                case Direction.up:    y--; break;
-                case Direction.down:  y++; break;
-                case Direction.left:  x--; break;
-                case Direction.right: x++; break;
-                default: break;
-            }
-            int ox = x + playerPos.x/64;
-            int oy = y + playerPos.y/64;
-            int bx = x + ox;
-            int by = y + oy;
+            ivec2 vec = dirToVec(playerDir);
+            ivec2 o = vec + playerPos / 64;
+            ivec2 b = vec + o;
 
-            if(map[by][bx] == '*')
+            if(map[b.y][b.x] == '*')
                 score--;
 
-            if(map[oy][ox] == '.')
+            if(map[o.y][o.x] == '.')
                 score++;
 
-            map[by][bx] = map[by][bx] == '*' ? '.' : ' ';
-            map[oy][ox] = map[oy][ox] == '.' ? '*' : '$';
+            map[b.y][b.x] = map[b.y][b.x] == '*' ? '.' : ' ';
+            map[o.y][o.x] = map[o.y][o.x] == '.' ? '*' : '$';
 
         }
+    }
+
+    ivec2 dirToVec(Direction dir)
+    {
+        ivec2 vec;
+        switch(playerDir)
+        {
+            case Direction.up:    vec.y--; break;
+            case Direction.down:  vec.y++; break;
+            case Direction.left:  vec.x--; break;
+            case Direction.right: vec.x++; break;
+            default: break;
+        }
+        return vec;
     }
 
     int step(ivec2 dir, ivec2 pos)
@@ -206,17 +209,9 @@ class Sokoban
         {
             if(dir != Direction.none)
             {
-                // player idle
-                ivec2 vdir;
                 playerDir = dir;
-                switch(dir)
-                {
-                    case Direction.left:  vdir.x--; break;
-                    case Direction.right: vdir.x++; break;
-                    case Direction.up:    vdir.y--; break;
-                    case Direction.down:  vdir.y++; break;
-                    default: return;
-                }
+                ivec2 vdir = dirToVec(dir);
+
                 if(step(vdir, playerPos / 64 + vdir))
                 {
                     playerPos += vdir * 4;
@@ -227,21 +222,16 @@ class Sokoban
         else
         {
             // player in move
-            switch(playerDir)
-            {
-                case Direction.up:    playerPos.y -= 4; if(boxPos.x != -1) boxPos.y -= 4; break;
-                case Direction.down:  playerPos.y += 4; if(boxPos.x != -1) boxPos.y += 4; break;
-                case Direction.left:  playerPos.x -= 4; if(boxPos.x != -1) boxPos.x -= 4; break;
-                case Direction.right: playerPos.x += 4; if(boxPos.x != -1) boxPos.x += 4; break;
-                default: break;
-            }
+            playerPos += dirToVec(playerDir) * 4;
+
+            if(boxPos.x != -1)
+                boxPos += dirToVec(playerDir) * 4;
+
             if((playerPos.x % 64) == 0 && (playerPos.y % 64) == 0)
             {
                 inMove = false;
                 if(boxPos.x != -1)
                 {
-                    //int bx = boxPos.x / 64;
-                    //int by = boxPos.y / 64;
                     ivec2 b = boxPos / 64;
 
                     if(map[b.y][b.x] == '.')
