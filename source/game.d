@@ -1,18 +1,8 @@
 module game;
 
 import dagon;
-
+import soko;
 import std.stdio;
-
-enum Direction { up, down, left, right }
-
-struct Undo
-{
-    int playerX;
-    int playerY;
-    int playerDirection;
-    int steps;
-}
 
 class GameScene: Scene
 {
@@ -25,28 +15,12 @@ class GameScene: Scene
     NuklearGUI gui;
     NKFont* font;
 
-    int width;
-    int height;
-    char[20][20] map;
-    bool playerInMove;
-    int playerX;
-    int playerY;
-    int playerDirection;
-    int boxX;
-    int boxY;
-    int boxes;
-    int score;
-    int steps;
-    int pushes;
-
-    enum maxUndos = 20;
-    Undo[maxUndos] undos;
-    int undoStart;
-    int undoSize;
+    Sokoban sokoban;
 
     this(SceneManager smngr)
     {
         super(smngr);
+        sokoban = New!Sokoban();
     }
 
     override void onAssetsRequest()
@@ -71,84 +45,7 @@ class GameScene: Scene
     {
         super.onStart();
 
-        loadMap(levelToLoad);
-    }
-
-    int loadMap(int i)
-    {
-        playerInMove = false;
-        playerDirection = Direction.down;
-        boxX = -1;
-        width = 0;
-        height = 0;
-        boxes = 0;
-        score = 0;
-        steps = 0;
-        pushes = 0;
-        undoSize = 0;
-        for(int k = 0; k < 20; k++)
-            for(int j = 0; j < 20; j++)
-                map[k][j] = 0;
-
-        int x = 0;
-        int y = 0;
-        char ch = 0;
-        int index = 0;
-        while(i > 0)
-        {
-            if((ch = aLevels.text[index++]) == ';')
-                i--;
-            if(index == aLevels.text.length)
-                return -1;
-        }
-        if(ch == ';') while((ch = aLevels.text[index++]) != '\n') {}
-        bool canLoadEmpty = false;
-        while(ch != ';')
-        {
-            ch = aLevels.text[index++];
-            switch(ch)
-            {
-                case '\n':
-                    if(x > 0)
-                    {
-                        y++;
-                        width = width > x ? width : x;
-                        x = 0;
-                    }
-                    canLoadEmpty = false;
-                    continue;
-                case '*':
-                    score++;
-                    goto case;
-                case '$':
-                    boxes++;
-                    goto case;
-                case '#':
-                case '.':
-                    map[y][x] = ch;
-                    canLoadEmpty = true;
-                    break;
-                case ' ':
-                    if(canLoadEmpty)
-                        map[y][x] = ch;
-                    break;
-                case '@':
-                    playerX = x * 64;
-                    playerY = y * 64;
-                    map[y][x] = ' ';
-                    break;
-                case '+':
-                    playerX = x * 64;
-                    playerY = y * 64;
-                    map[y][x] = '.';
-                    break;
-                default:
-                    break;
-            }
-            x++;
-        }
-        height = y;
-        return 1;
+        sokoban.loadMap(aLevels.text, levelToLoad);
     }
 
     override void onKeyDown(int key)
@@ -190,7 +87,7 @@ class GameScene: Scene
         img.region[1] = cast(short)sy;
         img.region[2] = 64;
         img.region[3] = 64;
-        gui.drawImage(NKRect(x + 1280/2 - width*32, y + 720/2 - height*32, 64, 64), &img, NKColor(255,255,255,255));
+        gui.drawImage(NKRect(x + 1280/2 - sokoban.width*32, y + 720/2 - sokoban.height*32, 64, 64), &img, NKColor(255,255,255,255));
     }
 
     void draw()
@@ -200,7 +97,7 @@ class GameScene: Scene
         {
             for(int i = 0; i < 19; i++)
             {
-                switch(map[j][i])
+                switch(sokoban.map[j][i])
                 {
                     case '#': drawSprite(i*64, j*64,  6*64, 6*64); break;
                     case '.': drawSprite(i*64, j*64, 11*64, 1*64); break;
@@ -213,160 +110,19 @@ class GameScene: Scene
         }
 
         // draw player
-        int frame = (playerX % 64) / 21 +  (playerY % 64) / 21;
-        switch(playerDirection)
+        int frame = (sokoban.playerX % 64) / 21 +  (sokoban.playerY % 64) / 21;
+        switch(sokoban.playerDirection)
         {
-            case Direction.up:    drawSprite(playerX, playerY, (3 + frame) * 64, 4*64); break;
-            case Direction.down:  drawSprite(playerX, playerY, (0 + frame) * 64, 4*64); break;
-            case Direction.left:  drawSprite(playerX, playerY, (3 + frame) * 64, 6*64); break;
-            case Direction.right: drawSprite(playerX, playerY, (0 + frame) * 64, 6*64); break;
+            case Direction.up:    drawSprite(sokoban.playerX, sokoban.playerY, (3 + frame) * 64, 4*64); break;
+            case Direction.down:  drawSprite(sokoban.playerX, sokoban.playerY, (0 + frame) * 64, 4*64); break;
+            case Direction.left:  drawSprite(sokoban.playerX, sokoban.playerY, (3 + frame) * 64, 6*64); break;
+            case Direction.right: drawSprite(sokoban.playerX, sokoban.playerY, (0 + frame) * 64, 6*64); break;
             default: break;
         }
 
-        if(boxX != -1)
+        if(sokoban.boxX != -1)
         {
-            drawSprite(boxX, boxY, 1*64, 0*64);
-        }
-    }
-
-
-    void addUndo()
-    {
-        Undo undo = Undo(playerX, playerY, playerDirection, steps);
-        undos[undoStart] = undo;
-        undoStart++;
-        undoStart = undoStart % 10;
-        if(undoSize < maxUndos)
-            undoSize++;
-    }
-
-    void doUndo()
-    {
-        if(undoSize)
-        {
-            undoSize--;
-            undoStart--;
-            if(undoStart == -1)
-                undoStart = maxUndos - 1;
-
-            Undo u = undos[undoStart];
-            playerX = u.playerX;
-            playerY = u.playerY;
-            playerDirection = u.playerDirection;
-            steps = u.steps;
-            pushes--;
-
-            int x = 0;
-            int y = 0;
-            switch(playerDirection)
-            {
-                case Direction.up:    y--; break;
-                case Direction.down:  y++; break;
-                case Direction.left:  x--; break;
-                case Direction.right: x++; break;
-                default: break;
-            }
-            int ox = x + playerX/64;
-            int oy = y + playerY/64;
-            int bx = x + ox;
-            int by = y + oy;
-
-            if(map[by][bx] == '*')
-                score--;
-
-            if(map[oy][ox] == '.')
-                score++;
-
-            map[by][bx] = map[by][bx] == '*' ? '.' : ' ';
-            map[oy][ox] = map[oy][ox] == '.' ? '*' : '$';
-
-        }
-    }
-
-    int step(int rx, int ry, int x, int y)
-    {
-        if(map[y][x] == '#')
-            return 0;
-
-        int bx = x + rx;
-        int by = y + ry;
-        if(map[y][x] == '$' || map[y][x] == '*')
-        {
-            if(map[by][bx] != ' ' && map[by][bx] != '.')
-                return 0;
-
-            addUndo();
-
-            if(map[y][x] == '*')
-                score--;
-
-            map[y][x] = map[y][x] == '*' ? '.' : ' ';
-
-            pushes++;
-
-            boxX = x * 64 + rx * 4;
-            boxY = y * 64 + ry * 4;
-        }
-
-        steps++;
-        return 1;
-    }
-
-    void logic(int ch)
-    {
-        if(!playerInMove)
-        {
-            // player idle
-            int x = 0;
-            int y = 0;
-            switch(ch)
-            {
-                case 'a': x--; playerDirection = Direction.left; break;
-                case 'd': x++; playerDirection = Direction.right; break;
-                case 'w': y--; playerDirection = Direction.up; break;
-                case 's': y++; playerDirection = Direction.down;  break;
-                default: return;
-            }
-            if(step(x, y, playerX/64 + x, playerY/64 + y))
-            {
-                playerX += x * 4;
-                playerY += y * 4;
-                playerInMove = true;
-            }
-        }
-        else
-        {
-            // player in move
-            switch(playerDirection)
-            {
-                case Direction.up:    playerY -= 4; if(boxX != -1) boxY -= 4; break;
-                case Direction.down:  playerY += 4; if(boxX != -1) boxY += 4; break;
-                case Direction.left:  playerX -= 4; if(boxX != -1) boxX -= 4; break;
-                case Direction.right: playerX += 4; if(boxX != -1) boxX += 4; break;
-                default: break;
-            }
-            if((playerX % 64) == 0 && (playerY % 64) == 0)
-            {
-                playerInMove = false;
-                if(boxX != -1)
-                {
-                    int bx = boxX / 64;
-                    int by = boxY / 64;
-
-                    if(map[by][bx] == '.')
-                        score++;
-
-                    map[by][bx] = map[by][bx] == '.' ? '*' : '$';
-
-                    boxX = -1;
-                }
-            }
-        }
-
-        if(score == boxes)
-        {
-            // we are done
-            loadMap(levelToLoad=(++levelToLoad)%117);
+            drawSprite(sokoban.boxX, sokoban.boxY, 1*64, 0*64);
         }
     }
 
@@ -385,31 +141,34 @@ class GameScene: Scene
 
         if(inputManager.getButton("RIGHT"))
             key = 'd';
-        logic(key);
+
+        sokoban.logic(key);
 
         if(inputManager.getButtonDown("NEXT"))
-            loadMap(levelToLoad = (++levelToLoad)%50);
+            sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%50);
+        
         if(inputManager.getButtonDown("PREV"))
-            loadMap(levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
-        if(inputManager.getButtonDown("UNDO") && !playerInMove)
-            doUndo();
+            sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
+        
+        if(inputManager.getButtonDown("UNDO") && !sokoban.playerInMove)
+            sokoban.doUndo();
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(10, 1);
             gui.labelf(NK_TEXT_LEFT, "Level: %d/50", levelToLoad + 1);
-            gui.labelf(NK_TEXT_LEFT, "Steps: %d", steps);
-            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", pushes);
+            gui.labelf(NK_TEXT_LEFT, "Steps: %d", sokoban.steps);
+            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", sokoban.pushes);
 
             gui.layoutRowDynamic(20, 2);
-            if(gui.buttonLabel("Prev")) loadMap(levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-            if(gui.buttonLabel("Next")) loadMap(levelToLoad = (++levelToLoad)%117); 
+            if(gui.buttonLabel("Prev")) sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
+            if(gui.buttonLabel("Next")) sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%117); 
 
             gui.layoutRowDynamic(20, 1);
             if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
 
             gui.layoutRowDynamic(30, 1);
-            if(undoSize && gui.buttonLabel("Undo") && !playerInMove) doUndo();  
+            if(sokoban.undoSize && gui.buttonLabel("Undo") && !sokoban.playerInMove) sokoban.doUndo();  
         }
         gui.end();
 
