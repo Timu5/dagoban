@@ -19,6 +19,8 @@ class GameScene: Scene
 
     Sokoban sokoban;
 
+    short tile; // 32, 64 or 128 pixels
+
     this(SceneManager smngr)
     {
         super(smngr);
@@ -29,7 +31,7 @@ class GameScene: Scene
     override void onAssetsRequest()
     {    
         aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
-        aTexSokoban = addTextureAsset("data/textures/tilesheet.png");
+        aTexSokoban = addTextureAsset("data/textures/tilesheet@2.png");
         aLevels =  addTextAsset("data/levels/Csoko.txt");
     }
 
@@ -50,6 +52,21 @@ class GameScene: Scene
 
         if(!fromEditor)
             sokoban.loadMap(aLevels.text, levelToLoad);
+
+        setScale();
+    }
+
+    void setScale()
+    {
+        tile = 128;
+        if((eventManager.windowWidth < sokoban.mapWidth * 128) || (eventManager.windowHeight < sokoban.mapHeight * 128))
+        {
+            tile = 64;
+            if((eventManager.windowWidth < sokoban.mapWidth * 64) || (eventManager.windowHeight < sokoban.mapHeight * 64))
+            {
+                tile = 32;
+            }
+        }
     }
 
     override void onKeyDown(int key)
@@ -87,11 +104,11 @@ class GameScene: Scene
     void drawSprite(int x, int y, int sx, int sy)
     {
         NKImage img = aTexSokoban.texture.toNKImage;
-        img.region[0] = cast(short)sx;
-        img.region[1] = cast(short)sy;
-        img.region[2] = 64;
-        img.region[3] = 64;
-        gui.drawImage(NKRect(x + (eventManager.windowWidth - sokoban.mapWidth * 64) / 2, y + (eventManager.windowHeight - sokoban.mapHeight * 64) / 2, 64, 64), &img, NKColor(255,255,255,255));
+        img.region[0] = cast(short)(sx * 128);
+        img.region[1] = cast(short)(sy * 128);
+        img.region[2] = cast(short)(128);
+        img.region[3] = cast(short)(128);
+        gui.drawImage(NKRect(x + (eventManager.windowWidth - sokoban.mapWidth * tile) / 2, y + (eventManager.windowHeight - sokoban.mapHeight * tile) / 2, tile, tile), &img, NKColor(255,255,255,255));
     }
 
     void draw()
@@ -103,11 +120,11 @@ class GameScene: Scene
             {
                 switch(sokoban.map[j][i])
                 {
-                    case '#': drawSprite(i*64, j*64,  6*64, 6*64); break;
-                    case '.': drawSprite(i*64, j*64, 11*64, 1*64); break;
-                    case '$': drawSprite(i*64, j*64,  1*64, 0*64); break;
-                    case '*': drawSprite(i*64, j*64,  1*64, 1*64); break;
-                    case ' ': drawSprite(i*64, j*64, 11*64, 0*64); break;
+                    case '#': drawSprite(i * tile, j * tile,  6, 6); break;
+                    case '.': drawSprite(i * tile, j * tile, 11, 1); break;
+                    case '$': drawSprite(i * tile, j * tile,  1, 0); break;
+                    case '*': drawSprite(i * tile, j * tile,  1, 1); break;
+                    case ' ': drawSprite(i * tile, j * tile, 11, 0); break;
                     default: break;
                 }
             }
@@ -117,16 +134,16 @@ class GameScene: Scene
         int frame = (sokoban.playerPos.x % 64) / 21 +  (sokoban.playerPos.y % 64) / 21;
         switch(sokoban.playerDir)
         {
-            case Direction.up:    drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (3 + frame) * 64, 4*64); break;
-            case Direction.down:  drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (0 + frame) * 64, 4*64); break;
-            case Direction.left:  drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (3 + frame) * 64, 6*64); break;
-            case Direction.right: drawSprite(sokoban.playerPos.x, sokoban.playerPos.y, (0 + frame) * 64, 6*64); break;
+            case Direction.up:    drawSprite(sokoban.playerPos.x * tile / 64, sokoban.playerPos.y * tile / 64, 3 + frame, 4); break;
+            case Direction.down:  drawSprite(sokoban.playerPos.x * tile / 64, sokoban.playerPos.y * tile / 64, 0 + frame, 4); break;
+            case Direction.left:  drawSprite(sokoban.playerPos.x * tile / 64, sokoban.playerPos.y * tile / 64, 3 + frame, 6); break;
+            case Direction.right: drawSprite(sokoban.playerPos.x * tile / 64, sokoban.playerPos.y * tile / 64, 0 + frame, 6); break;
             default: break;
         }
 
         if(sokoban.boxPos.x != -1)
         {
-            drawSprite(sokoban.boxPos.x, sokoban.boxPos.y, 1*64, 0*64);
+            drawSprite(sokoban.boxPos.x * tile / 64, sokoban.boxPos.y * tile / 64, 1, 0);
         }
     }
 
@@ -147,10 +164,16 @@ class GameScene: Scene
             dir = Direction.right;       
 
         if(inputManager.getButtonDown("NEXT") && !fromEditor)
+        {
             sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%50);
+            setScale();
+        }
         
         if(inputManager.getButtonDown("PREV") && !fromEditor)
+        {
             sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
+            setScale();
+        }
         
         if(inputManager.getButtonDown("UNDO") && !sokoban.inMove)
             sokoban.doUndo();
@@ -163,7 +186,10 @@ class GameScene: Scene
             if(fromEditor)
                 sceneManager.goToScene("EditorScene", false);   
             else
-                sokoban.loadMap(aLevels.text, levelToLoad=(++levelToLoad)%50);           
+            {
+                sokoban.loadMap(aLevels.text, levelToLoad=(++levelToLoad)%50);
+                setScale(); 
+            }
         }
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
