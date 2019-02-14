@@ -132,11 +132,11 @@ class MenuScene: Scene
         }
         else if(current == Menu.about)
         {
-            if (gui.begin("About", rect, NK_WINDOW_NO_SCROLLBAR))
+            if (gui.begin("Credits", rect, NK_WINDOW_NO_SCROLLBAR))
             {
                 gui.layoutRowDynamic(30, 1);
                 gui.label("Programmer: Mateusz Muszyński", NK_TEXT_ALIGN_LEFT);
-                gui.label("Graphics: kenney.nl", NK_TEXT_ALIGN_LEFT);
+                gui.label("Graphics: Kenney Vleugels (Kenney.nl)", NK_TEXT_ALIGN_LEFT);
                 gui.label("This game is built on top of Dagon Engine!", NK_TEXT_ALIGN_LEFT);
 
                 gui.layoutRowStatic(66, 200, 1);
