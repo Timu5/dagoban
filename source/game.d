@@ -91,15 +91,15 @@ class GameScene: Scene
         img.region[1] = cast(short)sy;
         img.region[2] = 64;
         img.region[3] = 64;
-        gui.drawImage(NKRect(x + 1280/2 - sokoban.mapWidth*32, y + 720/2 - sokoban.mapHeight*32, 64, 64), &img, NKColor(255,255,255,255));
+        gui.drawImage(NKRect(x + (eventManager.windowWidth - sokoban.mapWidth * 64) / 2, y + (eventManager.windowHeight - sokoban.mapHeight * 64) / 2, 64, 64), &img, NKColor(255,255,255,255));
     }
 
     void draw()
     {
         // draw map
-        for(int j = 0; j < 11; j++)
+        for(int j = 0; j < 20; j++)
         {
-            for(int i = 0; i < 19; i++)
+            for(int i = 0; i < 20; i++)
             {
                 switch(sokoban.map[j][i])
                 {
@@ -195,7 +195,7 @@ class GameScene: Scene
 
         debug
         {
-            if (gui.begin("FPS Chart", NKRect(1020, 500, 230, 220), NK_WINDOW_BORDER | NK_WINDOW_TITLE))
+            if (gui.begin("FPS Chart", NKRect(eventManager.windowWidth - 230, eventManager.windowHeight - 220, 230, 220), NK_WINDOW_BORDER | NK_WINDOW_TITLE))
             {
                 static float[60] fpsTable;
                 static int fpsTableIndex = 0;
@@ -229,7 +229,7 @@ class GameScene: Scene
             gui.end();
         }
 
-        if(gui.canvasBegin("canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
+        if(gui.canvasBegin("canvas", NKRect(0, 0, eventManager.windowWidth, eventManager.windowHeight), NKColor(45,45,45,255)))
         {
             draw();
         }

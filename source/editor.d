@@ -206,9 +206,9 @@ class EditorScene: Scene
     void draw()
     {
         // draw map
-        for(int j = 0; j < 11; j++)
+        for(int j = 0; j < 20; j++)
         {
-            for(int i = 0; i < 15; i++)
+            for(int i = 0; i < 20; i++)
             {
                 switch(map[j][i])
                 {
@@ -323,7 +323,7 @@ class EditorScene: Scene
         }
         gui.end();
 
-        if(gui.canvasBegin("canvas", NKRect(0, 0, 1280, 720), NKColor(45,45,45,255)))
+        if(gui.canvasBegin("canvas", NKRect(0, 0, eventManager.windowWidth, eventManager.windowHeight), NKColor(45, 45, 45, 255)))
         {
             draw();
         }

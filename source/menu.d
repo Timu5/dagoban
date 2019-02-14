@@ -81,7 +81,7 @@ class MenuScene: Scene
     {
         int w = 400;
         int h = 400;
-        auto rect = NKRect((1280-w)/2, (720-h)/2, w, h); // calculate rectancle in center
+        auto rect = NKRect((eventManager.windowWidth - w) / 2, (eventManager.windowHeight - h) / 2, w, h); // calculate rectancle in center
 
         if(current == Menu.mainMenu)
         {
@@ -149,7 +149,7 @@ class MenuScene: Scene
             gui.end();
         }
 
-        gui.canvasBegin("canvas", NKRect(0,0,1280,720), NKColor(45,45,45,255));
+        gui.canvasBegin("canvas", NKRect(0, 0, eventManager.windowWidth, eventManager.windowHeight), NKColor(45, 45, 45, 255));
         // empty canvas just to fill background
         gui.canvasEnd();
     }
