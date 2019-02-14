@@ -2,6 +2,7 @@ module editor;
 
 import dagon;
 
+import game;
 
 class EditorScene: Scene
 {
@@ -21,6 +22,8 @@ class EditorScene: Scene
 
     bool showLoad;
     bool showSave;
+
+    char[1024] buffer; // buffer used for map saving
 
     this(SceneManager smngr)
     {
@@ -49,10 +52,14 @@ class EditorScene: Scene
     {
         super.onStart();
 
-        loadMap(levelToLoad = 0);
-        selected = 0;
-        showLoad = false;
-        showSave = false;
+        if(!GameScene.fromEditor)
+        {
+            loadMap(levelToLoad = 0);
+            selected = 0;
+            showLoad = false;
+            showSave = false;
+        }
+        GameScene.fromEditor = false;
     }
 
     int loadMap(int i)
@@ -104,6 +111,33 @@ class EditorScene: Scene
         }
         mapHeight = y;
         return 1;
+    }
+
+    char* mapToString()
+    {
+        int idx = 0;
+        for(int j = 0; j < 20; j++)
+        {
+            for(int i = 0; i < 20; i++)
+            {
+                    buffer[idx++] = map[j][i];
+            }
+            while(buffer[idx - 1] == 0) idx--;
+            //idx++;
+            buffer[idx++] = '\n';
+        }
+        while(buffer[idx - 1] == '\n') idx--;
+        buffer[idx++] = '\n';
+        buffer[idx++] = ';';
+        return buffer.ptr;
+    }
+
+    void play()
+    {
+        char* map = mapToString();
+        GameScene.instance.sokoban.loadMap(map, 1024, 0);
+        GameScene.fromEditor = true;
+        sceneManager.goToScene("GameScene", false);  
     }
 
     override void onKeyDown(int key)
@@ -234,7 +268,7 @@ class EditorScene: Scene
             if(gui.buttonLabel("Delete")) selected = '-';
 
             gui.layoutRowDynamic(50, 1);
-            //if(gui.buttonLabel("Play")) sceneManager.goToScene("GameScene", false);         
+            if(gui.buttonLabel("Play")) play();        
             if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);
 
             if (showLoad)

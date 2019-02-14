@@ -7,6 +7,8 @@ import std.stdio;
 class GameScene: Scene
 {
     static int levelToLoad = 0;
+    static bool fromEditor = false;
+    static GameScene instance;
 
     FontAsset aFontDroidSans;
     TextureAsset aTexSokoban;
@@ -21,6 +23,7 @@ class GameScene: Scene
     {
         super(smngr);
         sokoban = New!Sokoban();
+        instance = this;
     }
 
     override void onAssetsRequest()
@@ -45,7 +48,8 @@ class GameScene: Scene
     {
         super.onStart();
 
-        sokoban.loadMap(aLevels.text, levelToLoad);
+        if(!fromEditor)
+            sokoban.loadMap(aLevels.text, levelToLoad);
     }
 
     override void onKeyDown(int key)
@@ -142,10 +146,10 @@ class GameScene: Scene
         if(inputManager.getButton("RIGHT"))
             dir = Direction.right;       
 
-        if(inputManager.getButtonDown("NEXT"))
+        if(inputManager.getButtonDown("NEXT") && !fromEditor)
             sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%50);
         
-        if(inputManager.getButtonDown("PREV"))
+        if(inputManager.getButtonDown("PREV") && !fromEditor)
             sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
         
         if(inputManager.getButtonDown("UNDO") && !sokoban.inMove)
@@ -156,25 +160,36 @@ class GameScene: Scene
         if(sokoban.score == sokoban.boxes)
         {
             // we are done
-            sokoban.loadMap(aLevels.text, levelToLoad=(++levelToLoad)%50);
+            if(fromEditor)
+                sceneManager.goToScene("EditorScene", false);   
+            else
+                sokoban.loadMap(aLevels.text, levelToLoad=(++levelToLoad)%50);           
         }
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
-            gui.layoutRowDynamic(10, 1);
-            gui.labelf(NK_TEXT_LEFT, "Level: %d/50", levelToLoad + 1);
-            gui.labelf(NK_TEXT_LEFT, "Steps: %d", sokoban.steps);
-            gui.labelf(NK_TEXT_LEFT, "Pushes: %d", sokoban.pushes);
+            if(!fromEditor)
+            {
+                gui.layoutRowDynamic(10, 1);
+                gui.labelf(NK_TEXT_LEFT, "Level: %d/50", levelToLoad + 1);
+                gui.labelf(NK_TEXT_LEFT, "Steps: %d", sokoban.steps);
+                gui.labelf(NK_TEXT_LEFT, "Pushes: %d", sokoban.pushes);
 
-            gui.layoutRowDynamic(20, 2);
-            if(gui.buttonLabel("Prev")) sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-            if(gui.buttonLabel("Next")) sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%117); 
+                gui.layoutRowDynamic(20, 2);
+                if(gui.buttonLabel("Prev")) sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
+                if(gui.buttonLabel("Next")) sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%117); 
 
-            gui.layoutRowDynamic(20, 1);
-            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
+                gui.layoutRowDynamic(20, 1);
+                if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
+            }
+            else
+            {
+                gui.layoutRowDynamic(30, 1);
+                if(gui.buttonLabel("Back to Editor")) sceneManager.goToScene("EditorScene", false);   
+            }
 
             gui.layoutRowDynamic(30, 1);
-            if(sokoban.undoSize && gui.buttonLabel("Undo") && !sokoban.inMove) sokoban.doUndo();  
+            if(sokoban.undoSize && gui.buttonLabel("Undo") && !sokoban.inMove) sokoban.doUndo();
         }
         gui.end();
 

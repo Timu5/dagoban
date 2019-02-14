@@ -56,8 +56,12 @@ class Sokoban
                 map[k][j] = 0;
     }
 
-
     int loadMap(string txt, int i)
+    {
+        return loadMap(cast(char*)txt.ptr, txt.length, i);
+    }
+
+    int loadMap(char* txt, ulong len, int i)
     {
         reset();
         int x = 0;
@@ -68,7 +72,7 @@ class Sokoban
         {
             if((ch = txt[index++]) == ';')
                 i--;
-            if(index == txt.length)
+            if(index == len)
                 return -1;
         }
         if(ch == ';') while((ch = txt[index++]) != '\n') {}
