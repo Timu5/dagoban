@@ -164,8 +164,8 @@ class EditorScene: Scene
                 map[y][x] = 0;
             else if(selected == '$' && map[y][x] == '.')
                 map[y][x] = '*';
-            else if(selected == '+' && map[y][x] == '.')
-                map[y][x] = '@';
+            else if(selected == '@' && map[y][x] == '.')
+                map[y][x] = '+';
             else
                 map[y][x] = selected;
         }
@@ -217,12 +217,12 @@ class EditorScene: Scene
                     case '$': drawSprite(i*64, j*64,  1*64, 0*64); break;
                     case '*': drawSprite(i*64, j*64,  1*64, 1*64); break;
                     case ' ': drawSprite(i*64, j*64, 11*64, 0*64); break;
-                    case '@': 
+                    case '+': 
                         drawSprite(i*64, j*64, 11*64, 0*64); 
                         drawSprite(i*64, j*64,  0*64, 4*64);
                         drawSprite(i*64, j*64, 12*64, 1*64);
                         break;
-                    case '+': 
+                    case '@': 
                         drawSprite(i*64, j*64, 11*64, 0*64); 
                         drawSprite(i*64, j*64,  0*64, 4*64);
                         break;
@@ -264,7 +264,7 @@ class EditorScene: Scene
             if(gui.buttonImage(sprite(11*64, 1*64))) selected = '.';
             if(gui.buttonImage(sprite( 1*64, 0*64))) selected = '$';
             if(gui.buttonImage(sprite(11*64, 0*64))) selected = ' ';
-            if(gui.buttonImage(sprite( 0*64, 4*64))) selected = '+';
+            if(gui.buttonImage(sprite( 0*64, 4*64))) selected = '@';
             if(gui.buttonLabel("Delete")) selected = '-';
 
             gui.layoutRowDynamic(50, 1);
