@@ -149,33 +149,34 @@ class GameScene: Scene
 
     override void onLogicsUpdate(double dt)
     {
+        float vertical = inputManager.getAxis("vertical");
+        float horizontal = inputManager.getAxis("horizontal");
+
         Direction dir = Direction.none;
 
-        if(inputManager.getButton("UP"))
+        if(vertical > 0.1f)
+            dir = Direction.down;
+        else if(vertical < -0.1f)
             dir = Direction.up;
 
-        if(inputManager.getButton("DOWN"))
-            dir = Direction.down;
+        if(horizontal > 0.1f)
+            dir = Direction.right;
+        else if(horizontal < -0.1f)
+            dir = Direction.left;    
 
-        if(inputManager.getButton("LEFT"))
-            dir = Direction.left;
-
-        if(inputManager.getButton("RIGHT"))
-            dir = Direction.right;       
-
-        if(inputManager.getButtonDown("NEXT") && !fromEditor)
+        if(inputManager.getButtonDown("next") && !fromEditor)
         {
             sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%50);
             setScale();
         }
         
-        if(inputManager.getButtonDown("PREV") && !fromEditor)
+        if(inputManager.getButtonDown("prev") && !fromEditor)
         {
             sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
             setScale();
         }
         
-        if(inputManager.getButtonDown("UNDO") && !sokoban.inMove)
+        if(inputManager.getButtonDown("undo") && !sokoban.inMove)
             sokoban.doUndo();
 
         sokoban.logic(dir);
@@ -194,6 +195,8 @@ class GameScene: Scene
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
+            gui.layoutRowDynamic(10, 1);
+            gui.labelf(NK_TEXT_LEFT, "Axis: %f", cast(double)inputManager.getAxis("forward"));
             if(!fromEditor)
             {
                 gui.layoutRowDynamic(10, 1);
