@@ -69,18 +69,6 @@ class GameScene: Scene
         }
     }
 
-    override void onKeyDown(int key)
-    {
-        if (key == KEY_BACKSPACE)
-            gui.inputKeyDown(NK_KEY_BACKSPACE);
-    }
-
-    override void onKeyUp(int key)
-    {
-        if (key == KEY_BACKSPACE)
-            gui.inputKeyUp(NK_KEY_BACKSPACE);
-    }
-
     override void onMouseButtonDown(int button)
     {
         gui.inputButtonDown(button);
@@ -106,8 +94,8 @@ class GameScene: Scene
         NKImage img = aTexSokoban.texture.toNKImage;
         img.region[0] = cast(short)(sx * 128);
         img.region[1] = cast(short)(sy * 128);
-        img.region[2] = cast(short)(128);
-        img.region[3] = cast(short)(128);
+        img.region[2] = cast(short)128;
+        img.region[3] = cast(short)128;
         gui.drawImage(NKRect(x + (eventManager.windowWidth - sokoban.mapWidth * tile) / 2, y + (eventManager.windowHeight - sokoban.mapHeight * tile) / 2, tile, tile), &img, NKColor(255,255,255,255));
     }
 
@@ -149,7 +137,7 @@ class GameScene: Scene
 
     override void onLogicsUpdate(double dt)
     {
-        float vertical = inputManager.getAxis("vertical");
+        float vertical   = inputManager.getAxis("vertical");
         float horizontal = inputManager.getAxis("horizontal");
 
         Direction dir = Direction.none;
@@ -166,7 +154,7 @@ class GameScene: Scene
 
         if(inputManager.getButtonDown("next") && !fromEditor)
         {
-            sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%50);
+            sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad) % 50);
             setScale();
         }
         
@@ -196,7 +184,7 @@ class GameScene: Scene
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(10, 1);
-            gui.labelf(NK_TEXT_LEFT, "Axis: %f", cast(double)inputManager.getAxis("forward"));
+            gui.labelf(NK_TEXT_LEFT, "Axis: %f", cast(double)inputManager.getAxis("vertical"));
             if(!fromEditor)
             {
                 gui.layoutRowDynamic(10, 1);
@@ -205,8 +193,8 @@ class GameScene: Scene
                 gui.labelf(NK_TEXT_LEFT, "Pushes: %d", sokoban.pushes);
 
                 gui.layoutRowDynamic(20, 2);
-                if(gui.buttonLabel("Prev")) sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 116 : levelToLoad);
-                if(gui.buttonLabel("Next")) sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad)%117); 
+                if(gui.buttonLabel("Prev")) sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
+                if(gui.buttonLabel("Next")) sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad) % 50); 
 
                 gui.layoutRowDynamic(20, 1);
                 if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
@@ -240,9 +228,9 @@ class GameScene: Scene
                 {
                     for (int i = 0; i < 30; i++)
                     {
-                        int index = (fpsTableIndex + i*2) % 60;
-                        int index2 = (fpsTableIndex % 2 == 1) ? (index+1) % 60 : (index-1) < 0 ? 59 : index - 1;
-                        float value = (fpsTable[index] + fpsTable[index2])/2;
+                        int index = (fpsTableIndex + i * 2) % 60;
+                        int index2 = (fpsTableIndex % 2 == 1) ? (index + 1) % 60 : (index - 1) < 0 ? 59 : index - 1;
+                        float value = (fpsTable[index] + fpsTable[index2]) / 2;
                         gui.chartPush(value);
 
                         if(value > max) max = value;

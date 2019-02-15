@@ -72,6 +72,7 @@ class EditorScene: Scene
 
         int x = 0;
         int y = 0;
+        
         char ch = 0;
         int index = 0;
         while(i > 0)
@@ -81,7 +82,9 @@ class EditorScene: Scene
             if(index == aLevels.text.length)
                 return -1;
         }
+
         if(ch == ';') while((ch = aLevels.text[index++]) != '\n') {}
+        
         while(ch != ';')
         {
             ch = aLevels.text[index++];
@@ -122,11 +125,16 @@ class EditorScene: Scene
             {
                     buffer[idx++] = map[j][i];
             }
-            while(buffer[idx - 1] == 0) idx--;
-            //idx++;
+        
+            while(buffer[idx - 1] == 0)
+                idx--;
+
             buffer[idx++] = '\n';
         }
-        while(buffer[idx - 1] == '\n') idx--;
+        
+        while(buffer[idx - 1] == '\n')
+            idx--;
+
         buffer[idx++] = '\n';
         buffer[idx++] = ';';
         return buffer.ptr;
@@ -158,8 +166,10 @@ class EditorScene: Scene
         if(eventManager.mouseX > 250 && selected != 0)
         {
             int x = (eventManager.mouseX - 250 - 32) / 64;
-            int y = (eventManager.mouseY) / 64;
-            if(x < 0 || y < 0) return;
+            int y = eventManager.mouseY / 64;
+
+            if(x < 0 || y < 0 || x > 19 || y > 19) return;
+            
             if(selected == '-')
                 map[y][x] = 0;
             else if(selected == '$' && map[y][x] == '.')
@@ -186,7 +196,6 @@ class EditorScene: Scene
         gui.inputScroll(x, y);
     }
 
-
     NKImage sprite(int sx, int sy)
     {
         NKImage img = aTexSokoban.texture.toNKImage;
@@ -200,7 +209,7 @@ class EditorScene: Scene
     void drawSprite(int x, int y, int sx, int sy)
     {
         NKImage img = sprite(sx, sy);
-        gui.drawImage(NKRect(250 + x + 1280/2 - 19*32, y + 720/2 - 11*32, 64, 64), &img, NKColor(255,255,255,255));
+        gui.drawImage(NKRect(250 + x + 1280 / 2 - 19 * 32, y + 720 /2  - 11 * 32, 64, 64), &img, NKColor(255, 255, 255, 255));
     }
 
     void draw()
@@ -234,7 +243,10 @@ class EditorScene: Scene
         {
             int x = (eventManager.mouseX - 250 - 32) / 64 * 64;
             int y = (eventManager.mouseY) / 64 * 64;
-            if(x <= 0 || y <= 0) return;
+
+            if(x < 0 || y < 0 || x > 19 || y > 19)
+                return;
+
             switch(selected)
             {
                 case '#': drawSprite(x, y,  6*64, 6*64); break;
@@ -253,7 +265,7 @@ class EditorScene: Scene
         if (gui.begin("StatsMenu", NKRect(0, 0, 250, 720), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(15, 1);
-            //gui.labelf(NK_TEXT_LEFT, "Level: %d", 1);
+
 
             gui.layoutRowDynamic(50, 2);
             if(gui.buttonLabel("Load")) showLoad = true;

@@ -37,6 +37,9 @@ class MenuScene: Scene
 
         auto eNuklear = createEntity2D();
         eNuklear.drawable = gui;
+
+        for(int i =0; i < 256; i++)
+            printf("%s\n", SDL_GetScancodeName(cast(SDL_Scancode)i));
     }
 
     override void onStart()

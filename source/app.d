@@ -12,12 +12,14 @@ class MyApplication: SceneApplication
     {
         super("DagoBan", args);
 
-        MenuScene menu = New!MenuScene(sceneManager);
-        GameScene game = New!GameScene(sceneManager);
+        MenuScene   menu   = New!MenuScene(sceneManager);
+        GameScene   game   = New!GameScene(sceneManager);
         EditorScene editor = New!EditorScene(sceneManager);
-        sceneManager.addScene(menu, "MenuScene");
-        sceneManager.addScene(game, "GameScene");
+
+        sceneManager.addScene(menu,   "MenuScene");
+        sceneManager.addScene(game,   "GameScene");
         sceneManager.addScene(editor, "EditorScene");
+
         sceneManager.goToScene("MenuScene");
     }
 }

@@ -44,12 +44,8 @@ class Sokoban
         inMove = false;
         playerDir = Direction.down;
         boxPos.x = -1;
-        mapWidth = 0;
-        mapHeight = 0;
-        boxes = 0;
-        score = 0;
-        steps = 0;
-        pushes = 0;
+        mapWidth = mapHeight = 0;
+        boxes = score = steps = pushes = 0;
         undoSize = 0;
         for(int k = 0; k < 20; k++)
             for(int j = 0; j < 20; j++)
