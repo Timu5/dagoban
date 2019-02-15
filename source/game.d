@@ -108,11 +108,11 @@ class GameScene: Scene
             {
                 switch(sokoban.map[j][i])
                 {
-                    case '#': drawSprite(i * tile, j * tile,  6, 6); break;
-                    case '.': drawSprite(i * tile, j * tile, 11, 1); break;
-                    case '$': drawSprite(i * tile, j * tile,  1, 0); break;
-                    case '*': drawSprite(i * tile, j * tile,  1, 1); break;
-                    case ' ': drawSprite(i * tile, j * tile, 11, 0); break;
+                    case Tile.wall:        drawSprite(i * tile, j * tile,  6, 6); break;
+                    case Tile.socket:      drawSprite(i * tile, j * tile, 11, 1); break;
+                    case Tile.box:         drawSprite(i * tile, j * tile,  1, 0); break;
+                    case Tile.boxOnSocket: drawSprite(i * tile, j * tile,  1, 1); break;
+                    case Tile.floor:       drawSprite(i * tile, j * tile, 11, 0); break;
                     default: break;
                 }
             }

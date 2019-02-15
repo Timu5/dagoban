@@ -4,6 +4,8 @@ import dagon;
 
 enum Direction { none, up, down, left, right }
 
+enum Tile { empty, floor, wall, box, socket, boxOnSocket }
+
 struct Undo
 {
     ivec2 pos;
@@ -13,7 +15,7 @@ struct Undo
 
 class Sokoban
 {
-    char[20][20] map;
+    Tile[20][20] map;
     int mapWidth;
     int mapHeight;
 
@@ -49,7 +51,7 @@ class Sokoban
         undoSize = 0;
         for(int k = 0; k < 20; k++)
             for(int j = 0; j < 20; j++)
-                map[k][j] = 0;
+                map[k][j] = Tile.empty;
     }
 
     int loadMap(string txt, int i)
@@ -89,26 +91,34 @@ class Sokoban
                     continue;
                 case '*':
                     score++;
-                    goto case;
+                    boxes++;
+                    map[y][x] = Tile.boxOnSocket;
+                    canLoadEmpty = true;
+                    break;
                 case '$':
                     boxes++;
-                    goto case;
+                    map[y][x] = Tile.box;
+                    canLoadEmpty = true;
+                    break;
                 case '#':
+                    map[y][x] = Tile.wall;
+                    canLoadEmpty = true;
+                    break;
                 case '.':
-                    map[y][x] = ch;
+                    map[y][x] = Tile.socket;
                     canLoadEmpty = true;
                     break;
                 case ' ':
                     if(canLoadEmpty)
-                        map[y][x] = ch;
+                        map[y][x] = Tile.floor;
                     break;
                 case '@':
                     playerPos = ivec2(x * 64, y * 64);
-                    map[y][x] = ' ';
+                    map[y][x] = Tile.floor;
                     break;
                 case '+':
                     playerPos = ivec2(x * 64, y * 64);
-                    map[y][x] = '.';
+                    map[y][x] = Tile.socket;
                     break;
                 default:
                     break;
@@ -149,14 +159,14 @@ class Sokoban
             ivec2 o = vec + playerPos / 64;
             ivec2 b = vec + o;
 
-            if(map[b.y][b.x] == '*')
+            if(map[b.y][b.x] == Tile.boxOnSocket)
                 score--;
 
-            if(map[o.y][o.x] == '.')
+            if(map[o.y][o.x] == Tile.socket)
                 score++;
 
-            map[b.y][b.x] = map[b.y][b.x] == '*' ? '.' : ' ';
-            map[o.y][o.x] = map[o.y][o.x] == '.' ? '*' : '$';
+            map[b.y][b.x] = map[b.y][b.x] == Tile.boxOnSocket ? Tile.socket : Tile.floor;
+            map[o.y][o.x] = map[o.y][o.x] == Tile.socket ? Tile.boxOnSocket : Tile.box;
 
         }
     }
@@ -177,22 +187,22 @@ class Sokoban
 
     int step(ivec2 dir, ivec2 pos)
     {
-        if(map[pos.y][pos.x] == '#')
+        if(map[pos.y][pos.x] == Tile.wall)
             return 0;
       
-        if(map[pos.y][pos.x] == '$' || map[pos.y][pos.x] == '*')
+        if(map[pos.y][pos.x] == Tile.box || map[pos.y][pos.x] == Tile.boxOnSocket)
         {
             ivec2 b = pos + dir;
 
-            if(map[b.y][b.x] != ' ' && map[b.y][b.x] != '.')
+            if(map[b.y][b.x] != Tile.floor && map[b.y][b.x] != Tile.socket)
                 return 0;
 
             addUndo();
 
-            if(map[pos.y][pos.x] == '*')
+            if(map[pos.y][pos.x] == Tile.boxOnSocket)
                 score--;
 
-            map[pos.y][pos.x] = map[pos.y][pos.x] == '*' ? '.' : ' ';
+            map[pos.y][pos.x] = map[pos.y][pos.x] == Tile.boxOnSocket ? Tile.socket : Tile.floor;
 
             pushes++;
 
@@ -234,10 +244,10 @@ class Sokoban
                 {
                     ivec2 b = boxPos / 64;
 
-                    if(map[b.y][b.x] == '.')
+                    if(map[b.y][b.x] == Tile.socket)
                         score++;
 
-                    map[b.y][b.x] = map[b.y][b.x] == '.' ? '*' : '$';
+                    map[b.y][b.x] = map[b.y][b.x] == Tile.socket ? Tile.boxOnSocket : Tile.box;
 
                     boxPos.x = -1;
                 }
