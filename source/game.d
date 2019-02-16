@@ -51,22 +51,23 @@ class GameScene: Scene
         super.onStart();
 
         if(!fromEditor)
-            sokoban.loadMap(aLevels.text, levelToLoad);
+            loadMap(levelToLoad);
 
         setScale();
     }
 
+    void loadMap(int i)
+    {
+        sokoban.loadMap(aLevels.text, i);
+        setScale();
+        levelToLoad = i;
+    }
+
     void setScale()
     {
-        tile = 128;
-        if((eventManager.windowWidth < sokoban.mapWidth * 128) || (eventManager.windowHeight < sokoban.mapHeight * 128))
-        {
-            tile = 64;
-            if((eventManager.windowWidth < sokoban.mapWidth * 64) || (eventManager.windowHeight < sokoban.mapHeight * 64))
-            {
-                tile = 32;
-            }
-        }
+        int a = (eventManager.windowWidth - 20) / sokoban.mapWidth;
+        int b = (eventManager.windowHeight - 20) / sokoban.mapHeight;
+        tile = cast(short)(a > b ? b : a);
     }
 
     override void onMouseButtonDown(int button)
@@ -158,16 +159,10 @@ class GameScene: Scene
             dir = Direction.left;    
 
         if(inputManager.getButtonDown("next") && !fromEditor)
-        {
-            sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad) % 50);
-            setScale();
-        }
+            loadMap((++levelToLoad) % 50);
         
         if(inputManager.getButtonDown("prev") && !fromEditor)
-        {
-            sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
-            setScale();
-        }
+            loadMap((--levelToLoad) < 0 ? 49 : levelToLoad);
         
         if(inputManager.getButtonDown("undo") && !sokoban.inMove)
             sokoban.doUndo();
@@ -180,16 +175,11 @@ class GameScene: Scene
             if(fromEditor)
                 sceneManager.goToScene("EditorScene", false);   
             else
-            {
-                sokoban.loadMap(aLevels.text, levelToLoad=(++levelToLoad)%50);
-                setScale(); 
-            }
+                loadMap((++levelToLoad)%50);
         }
 
-        if (gui.begin("StatsMenu", NKRect(0, 0, 130, 200), NK_WINDOW_NO_SCROLLBAR))
+        if (gui.begin("StatsMenu", NKRect(0, 0, 130, 130), NK_WINDOW_NO_SCROLLBAR))
         {
-            gui.layoutRowDynamic(10, 1);
-            gui.labelf(NK_TEXT_LEFT, "Axis: %f", cast(double)inputManager.getAxis("vertical"));
             if(!fromEditor)
             {
                 gui.layoutRowDynamic(10, 1);
@@ -198,8 +188,8 @@ class GameScene: Scene
                 gui.labelf(NK_TEXT_LEFT, "Pushes: %d", sokoban.pushes);
 
                 gui.layoutRowDynamic(20, 2);
-                if(gui.buttonLabel("Prev")) sokoban.loadMap(aLevels.text, levelToLoad = (--levelToLoad) < 0 ? 49 : levelToLoad);
-                if(gui.buttonLabel("Next")) sokoban.loadMap(aLevels.text, levelToLoad = (++levelToLoad) % 50); 
+                if(gui.buttonLabel("Prev")) loadMap((--levelToLoad) < 0 ? 49 : levelToLoad);
+                if(gui.buttonLabel("Next")) loadMap((++levelToLoad) % 50); 
 
                 gui.layoutRowDynamic(20, 1);
                 if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
