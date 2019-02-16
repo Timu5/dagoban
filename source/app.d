@@ -26,7 +26,9 @@ class MyApplication: SceneApplication
 
 void main(string[] args)
 {
+    debug enableMemoryProfiler(true);
     MyApplication app = New!MyApplication(args);
     app.run();
     Delete(app);
+    debug printMemoryLeaks();
 }

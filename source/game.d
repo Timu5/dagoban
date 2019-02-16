@@ -28,6 +28,11 @@ class GameScene: Scene
         instance = this;
     }
 
+    ~this()
+    {
+        Delete(sokoban);
+    }
+
     override void onAssetsRequest()
     {    
         aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
