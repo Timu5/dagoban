@@ -131,7 +131,12 @@ class GameScene: Scene
 
         if(sokoban.boxPos.x != -1)
         {
-            drawSprite(sokoban.boxPos.x * tile / 64, sokoban.boxPos.y * tile / 64, 1, 0);
+            int x = (sokoban.boxPos.x + 32) / 64;
+            int y = (sokoban.boxPos.y + 32) / 64;
+            if(sokoban.map[y][x] == Tile.socket)
+                drawSprite(sokoban.boxPos.x * tile / 64, sokoban.boxPos.y * tile / 64, 1, 1);
+            else
+                drawSprite(sokoban.boxPos.x * tile / 64, sokoban.boxPos.y * tile / 64, 1, 0);
         }
     }
 
