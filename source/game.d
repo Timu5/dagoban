@@ -180,7 +180,7 @@ class GameScene: Scene
             if(fromEditor)
                 sceneManager.goToScene("EditorScene", false);   
             else
-                loadMap((++levelToLoad)%50);
+                loadMap((++levelToLoad)%50); // load next level
         }
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 130), NK_WINDOW_NO_SCROLLBAR))

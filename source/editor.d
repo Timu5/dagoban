@@ -267,8 +267,8 @@ class EditorScene: Scene
             gui.layoutRowDynamic(15, 1);
 
 
-            gui.layoutRowDynamic(50, 2);
-            if(gui.buttonLabel("Load")) showLoad = true;
+            //gui.layoutRowDynamic(50, 2);
+            //if(gui.buttonLabel("Load")) showLoad = true;
             //if(gui.buttonLabel("Save")) ;
 
             gui.layoutRowDynamic(100, 2);
@@ -308,7 +308,7 @@ class EditorScene: Scene
                 }
             }
 
-            if (showSave)
+            /*if (showSave)
             {
                 if (gui.popupBegin(NK_POPUP_STATIC, "SaveLevel", 0, NKRect(0, 0, 250, 720)))
                 {
@@ -331,7 +331,7 @@ class EditorScene: Scene
                 {
                     showSave = false;
                 }
-            }
+            }*/
         }
         gui.end();
 
