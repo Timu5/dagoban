@@ -8,6 +8,6 @@
 	"name": "dagoban",
 	
 	"dependencies": {
-        "dagon": "~master"
+        "dagon": "0.10.2"
     },
 }
