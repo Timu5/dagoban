@@ -5,30 +5,52 @@ import dagon;
 import game;
 import menu;
 import editor;
+import dlib.container.dict;
 
-class MyApplication: SceneApplication
+enum EventCode
 {
-    this(string[] args)
+    LoadMap = 1
+}
+
+class Dagoban: Game
+{
+    Dict!(Scene, string) scenes;
+    int levelToLoad = 0;
+    bool fromEditor = false;
+    
+    this(uint w, uint h, bool fullscreen, string[] args)
     {
-        super("DagoBan", args);
+        super(w, h, fullscreen, "DagoBan", args);
 
-        MenuScene   menu   = New!MenuScene(sceneManager);
-        GameScene   game   = New!GameScene(sceneManager);
-        EditorScene editor = New!EditorScene(sceneManager);
+        auto menu = New!MenuScene(this);
+        auto game = New!GameScene(this);
+        auto editor = New!EditorScene(this);
+        
+        scenes = New!(Dict!(Scene, string))();
+        scenes["MenuScene"] = menu;
+        scenes["GameScene"] = game;
+        scenes["EditorScene"] = editor;
 
-        sceneManager.addScene(menu,   "MenuScene");
-        sceneManager.addScene(game,   "GameScene");
-        sceneManager.addScene(editor, "EditorScene");
-
-        sceneManager.goToScene("MenuScene");
+        currentScene = menu;
+    }
+    
+    ~this()
+    {
+        Delete(scenes);
+    }
+    
+    void goToScene(string name, bool reload)
+    {
+        currentScene = scenes[name];
+        generateUserEvent(EventCode.LoadMap);
     }
 }
 
 void main(string[] args)
 {
     debug enableMemoryProfiler(true);
-    MyApplication app = New!MyApplication(args);
-    app.run();
-    Delete(app);
+    Dagoban game = New!Dagoban(1280, 720, false, args);
+    game.run();
+    Delete(game);
     debug printMemoryLeaks();
 }

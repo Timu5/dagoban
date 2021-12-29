@@ -2,9 +2,14 @@ module menu;
 
 import dagon;
 import game;
+import dagon.ext.ftfont;
+import dagon.ext.nuklear;
+import main;
 
 class MenuScene: Scene
 {
+    Dagoban game;
+    
     enum Menu { mainMenu, levelMenu, about }
 
     FontAsset aFontDroidSans;
@@ -16,32 +21,27 @@ class MenuScene: Scene
 
     Menu current;
 
-    this(SceneManager smngr)
+    this(Dagoban game)
     {
-        super(smngr);
+        super(game);
+        this.game = game;
     }
 
-    override void onAssetsRequest()
+    override void beforeLoad()
     {    
-        aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
+        aFontDroidSans = this.addFontAsset("data/font/DroidSans.ttf", 14);
         aDagonLogo =  addTextureAsset("data/textures/dagon-logo.png");
     }
 
-    override void onAllocate()
+    override void afterLoad()
     {
-        super.onAllocate();
-
         gui = New!NuklearGUI(eventManager, assetManager);
         fontTitle = gui.addFont(aFontDroidSans, 40);
         fontNormal = gui.addFont(aFontDroidSans, 20, gui.fontLatinExtendedAGlyphRanges); // inlcude utf glyph range with polish characters
 
-        auto eNuklear = createEntity2D();
+        auto eNuklear = addEntityHUD();
         eNuklear.drawable = gui;
-    }
-
-    override void onStart()
-    {
-        super.onStart();
+        
         current = Menu.mainMenu;
     }
 
@@ -77,8 +77,10 @@ class MenuScene: Scene
         gui.inputScroll(x, y);
     }
 
-    override void onLogicsUpdate(double dt)
+    override void onUpdate(Time t)
     {
+        gui.update(t);
+        
         int w = 400;
         int h = 400;
         auto rect = NKRect((eventManager.windowWidth - w) / 2, (eventManager.windowHeight - h) / 2, w, h); // calculate rectancle in center
@@ -93,11 +95,11 @@ class MenuScene: Scene
 
                 gui.styleSetFont(fontNormal);
                 if(gui.buttonLabel("New game")) current = Menu.levelMenu;
-                if(gui.buttonLabel("Level editor")) sceneManager.goToScene("EditorScene", false);
+                if(gui.buttonLabel("Level editor")) game.goToScene("EditorScene", false);
                 if(gui.buttonLabel("About")) current = Menu.about;
                 gui.layoutRowDynamic(100, 1); // make empty space
                 gui.layoutRowDynamic(50, 1);
-                if(gui.buttonLabel("Exit")) exitApplication();
+                if(gui.buttonLabel("Exit")) game.exit();
             }
             gui.end();
         }
@@ -119,8 +121,8 @@ class MenuScene: Scene
                         snprintf(buffer.ptr, 255, "%d", i+1);
                         if(gui.buttonLabel(buffer.ptr)) 
                         {
-                            GameScene.levelToLoad = i;
-                            sceneManager.goToScene("GameScene", false);
+                            game.levelToLoad = i;
+                            game.goToScene("GameScene", false);
                         }
                     }
                     gui.groupEnd();

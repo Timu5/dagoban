@@ -8,6 +8,8 @@
 	"name": "dagoban",
 	
 	"dependencies": {
-        "dagon": "0.10.2"
-    },
+		"dagon": "~>0.12.1",
+		"dagon:ftfont": "~>0.12.1",
+		"dagon:nuklear": "~>0.12.1"
+	}
 }
