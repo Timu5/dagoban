@@ -2,10 +2,15 @@ module editor;
 
 import dagon;
 
+import main;
 import game;
+import dagon.ext.ftfont;
+import dagon.ext.nuklear;
 
 class EditorScene: Scene
 {
+    Dagoban game;
+    
     FontAsset aFontDroidSans;
     TextureAsset aTexSokoban;
     TextAsset aLevels;
@@ -25,41 +30,35 @@ class EditorScene: Scene
 
     char[1024] buffer; // buffer used for map saving
 
-    this(SceneManager smngr)
+    this(Dagoban game)
     {
-        super(smngr);
+        super(game);
+        this.game = game;
     }
 
-    override void onAssetsRequest()
+    override void beforeLoad()
     {    
-        aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
+        aFontDroidSans = this.addFontAsset("data/font/DroidSans.ttf", 14);
         aTexSokoban = addTextureAsset("data/textures/tilesheet.png");
         aLevels =  addTextAsset("data/levels/Csoko.txt");
     }
 
-    override void onAllocate()
+    override void afterLoad()
     {
-        super.onAllocate();
-
         gui = New!NuklearGUI(eventManager, assetManager);
         font = gui.addFont(aFontDroidSans, 20);
 
-        auto eNuklear = createEntity2D();
+        auto eNuklear = addEntityHUD();
         eNuklear.drawable = gui;
-    }
 
-    override void onStart()
-    {
-        super.onStart();
-
-        if(!GameScene.fromEditor)
+        if(!game.fromEditor)
         {
             loadMap(levelToLoad = 0);
             selected = 0;
             showLoad = false;
             showSave = false;
         }
-        GameScene.fromEditor = false;
+        game.fromEditor = false;
     }
 
     int loadMap(int i)
@@ -143,9 +142,10 @@ class EditorScene: Scene
     void play()
     {
         char* map = mapToString();
-        GameScene.instance.sokoban.loadMap(map, 1024, 0);
-        GameScene.fromEditor = true;
-        sceneManager.goToScene("GameScene", false);  
+        GameScene gameScene = cast(GameScene)(game.scenes["GameScene"]);
+        gameScene.sokoban.loadMap(map, 1024, 0);
+        game.fromEditor = true;
+        game.goToScene("GameScene", false);
     }
 
     override void onKeyDown(int key)
@@ -260,8 +260,10 @@ class EditorScene: Scene
         }
     }
 
-    override void onLogicsUpdate(double dt)
+    override void onUpdate(Time t)
     {
+        gui.update(t);
+        
         if (gui.begin("StatsMenu", NKRect(0, 0, 250, 720), NK_WINDOW_NO_SCROLLBAR))
         {
             gui.layoutRowDynamic(15, 1);
@@ -280,8 +282,11 @@ class EditorScene: Scene
             if(gui.buttonLabel("Delete")) selected = '-';
 
             gui.layoutRowDynamic(50, 1);
-            if(gui.buttonLabel("Play")) play();        
-            if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);
+            if(gui.buttonLabel("Play")) play();
+            if(gui.buttonLabel("Main Menu")) 
+            {
+                game.goToScene("MenuScene", false);
+            }
 
             if (showLoad)
             {
@@ -340,10 +345,5 @@ class EditorScene: Scene
             draw();
         }
         gui.canvasEnd();
-    }
-
-    override void onRelease()
-    {
-        super.onRelease();
     }
 }

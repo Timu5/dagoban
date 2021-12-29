@@ -1,14 +1,15 @@
 module game;
 
 import dagon;
+import dagon.ext.ftfont;
+import dagon.ext.nuklear;
 import soko;
+import main;
 import std.stdio;
 
 class GameScene: Scene
 {
-    static int levelToLoad = 0;
-    static bool fromEditor = false;
-    static GameScene instance;
+    Dagoban game;
 
     FontAsset aFontDroidSans;
     TextureAsset aTexSokoban;
@@ -21,11 +22,11 @@ class GameScene: Scene
 
     short tile; // 32, 64 or 128 pixels
 
-    this(SceneManager smngr)
+    this(Dagoban game)
     {
-        super(smngr);
+        super(game);
+        this.game = game;
         sokoban = New!Sokoban();
-        instance = this;
     }
 
     ~this()
@@ -33,39 +34,38 @@ class GameScene: Scene
         Delete(sokoban);
     }
 
-    override void onAssetsRequest()
+    override void beforeLoad()
     {    
-        aFontDroidSans = addFontAsset("data/font/DroidSans.ttf", 14);
+        aFontDroidSans = this.addFontAsset("data/font/DroidSans.ttf", 14);
         aTexSokoban = addTextureAsset("data/textures/tilesheet@2.png");
         aLevels =  addTextAsset("data/levels/Csoko.txt");
     }
 
-    override void onAllocate()
+    override void afterLoad()
     {
-        super.onAllocate();
-
         gui = New!NuklearGUI(eventManager, assetManager);
         font = gui.addFont(aFontDroidSans, 20);
 
-        auto eNuklear = createEntity2D();
+        auto eNuklear = addEntityHUD();
         eNuklear.drawable = gui;
-    }
-
-    override void onStart()
-    {
-        super.onStart();
-
-        if(!fromEditor)
-            loadMap(levelToLoad);
 
         setScale();
+    }
+    
+    override void onUserEvent(int code)
+    {
+        if (code == EventCode.LoadMap)
+        {
+            if (!game.fromEditor)
+                loadMap(game.levelToLoad);
+        }
     }
 
     void loadMap(int i)
     {
         sokoban.loadMap(aLevels.text, i);
         setScale();
-        levelToLoad = i;
+        game.levelToLoad = i;
     }
 
     void setScale()
@@ -146,7 +146,7 @@ class GameScene: Scene
         }
     }
 
-    override void onLogicsUpdate(double dt)
+    override void onUpdate(Time t)
     {
         float vertical   = inputManager.getAxis("vertical");
         float horizontal = inputManager.getAxis("horizontal");
@@ -163,11 +163,11 @@ class GameScene: Scene
         else if(horizontal < -0.1f)
             dir = Direction.left;    
 
-        if(inputManager.getButtonDown("next") && !fromEditor)
-            loadMap((++levelToLoad) % 50);
+        if(inputManager.getButtonDown("next") && !game.fromEditor)
+            loadMap((++game.levelToLoad) % 50);
         
-        if(inputManager.getButtonDown("prev") && !fromEditor)
-            loadMap((--levelToLoad) < 0 ? 49 : levelToLoad);
+        if(inputManager.getButtonDown("prev") && !game.fromEditor)
+            loadMap((--game.levelToLoad) < 0 ? 49 : game.levelToLoad);
         
         if(inputManager.getButtonDown("undo") && !sokoban.inMove)
             sokoban.doUndo();
@@ -177,32 +177,34 @@ class GameScene: Scene
         if(sokoban.score == sokoban.boxes)
         {
             // we are done
-            if(fromEditor)
-                sceneManager.goToScene("EditorScene", false);   
+            if(game.fromEditor)
+                game.goToScene("EditorScene", false);   
             else
-                loadMap((++levelToLoad)%50); // load next level
+                loadMap((++game.levelToLoad)%50); // load next level
         }
+        
+        gui.update(t);
 
         if (gui.begin("StatsMenu", NKRect(0, 0, 130, 130), NK_WINDOW_NO_SCROLLBAR))
         {
-            if(!fromEditor)
+            if(!game.fromEditor)
             {
                 gui.layoutRowDynamic(10, 1);
-                gui.labelf(NK_TEXT_LEFT, "Level: %d/50", levelToLoad + 1);
+                gui.labelf(NK_TEXT_LEFT, "Level: %d/50", game.levelToLoad + 1);
                 gui.labelf(NK_TEXT_LEFT, "Steps: %d", sokoban.steps);
                 gui.labelf(NK_TEXT_LEFT, "Pushes: %d", sokoban.pushes);
 
                 gui.layoutRowDynamic(20, 2);
-                if(gui.buttonLabel("Prev")) loadMap((--levelToLoad) < 0 ? 49 : levelToLoad);
-                if(gui.buttonLabel("Next")) loadMap((++levelToLoad) % 50); 
+                if(gui.buttonLabel("Prev")) loadMap((--game.levelToLoad) < 0 ? 49 : game.levelToLoad);
+                if(gui.buttonLabel("Next")) loadMap((++game.levelToLoad) % 50); 
 
                 gui.layoutRowDynamic(20, 1);
-                if(gui.buttonLabel("Main Menu")) sceneManager.goToScene("MenuScene", false);   
+                if(gui.buttonLabel("Main Menu")) game.goToScene("MenuScene", false);   
             }
             else
             {
                 gui.layoutRowDynamic(30, 1);
-                if(gui.buttonLabel("Back to Editor")) sceneManager.goToScene("EditorScene", false);   
+                if(gui.buttonLabel("Back to Editor")) game.goToScene("EditorScene", false);   
             }
 
             gui.layoutRowDynamic(30, 1);
@@ -241,7 +243,7 @@ class GameScene: Scene
                 gui.layoutRowDynamic(15, 1);
                 gui.labelf(NK_TEXT_LEFT, "Max FPS: %.2f", cast(double)max);
                 gui.labelf(NK_TEXT_LEFT, "Min FPS: %.2f", cast(double)min);
-                gui.labelf(NK_TEXT_LEFT, "Avg FPS: %d", eventManager.fps);
+                gui.labelf(NK_TEXT_LEFT, "Avg FPS: %d", 1.0 / eventManager.deltaTime);
             }
             gui.end();
         }
@@ -251,10 +253,5 @@ class GameScene: Scene
             draw();
         }
         gui.canvasEnd();
-    }
-
-    override void onRelease()
-    {
-        super.onRelease();
     }
 }
