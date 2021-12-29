@@ -283,7 +283,10 @@ class EditorScene: Scene
 
             gui.layoutRowDynamic(50, 1);
             if(gui.buttonLabel("Play")) play();
-            if(gui.buttonLabel("Main Menu")) game.goToScene("MenuScene", false);
+            if(gui.buttonLabel("Main Menu")) 
+            {
+                game.goToScene("MenuScene", false);
+            }
 
             if (showLoad)
             {

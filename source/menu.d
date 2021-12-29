@@ -44,6 +44,14 @@ class MenuScene: Scene
         
         current = Menu.mainMenu;
     }
+    
+    override void onUserEvent(int code)
+    {
+        if (code == EventCode.ExitToMenu)
+        {
+            current = Menu.mainMenu;
+        }
+    }
 
     override void onKeyDown(int key)
     {

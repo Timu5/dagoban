@@ -9,7 +9,9 @@ import dlib.container.dict;
 
 enum EventCode
 {
-    LoadMap = 1
+    LoadMap = 1,
+    LoadEditor = 2,
+    ExitToMenu = 3
 }
 
 class Dagoban: Game
@@ -42,7 +44,12 @@ class Dagoban: Game
     void goToScene(string name, bool reload)
     {
         currentScene = scenes[name];
-        generateUserEvent(EventCode.LoadMap);
+        if (name == "GameScene")
+            generateUserEvent(EventCode.LoadMap);
+        else if (name == "MenuScene")
+            generateUserEvent(EventCode.ExitToMenu);
+        else if (name == "EditorScene")
+            generateUserEvent(EventCode.LoadEditor);
     }
 }
 
